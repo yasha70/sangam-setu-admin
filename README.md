@@ -4,13 +4,14 @@ Sangam Setu is a matrimony app for families. People build a complete profile, br
 
 ## Website
 
-`website/` is the public marketing site for the app. It's a static site with no build step:
+`website/` is the public website. It's a static site with no build step:
 
 | File | What it is |
 | --- | --- |
-| `website/index.html` | The page: hero, privacy rules, how it works, app tour, for families, FAQ, launch |
+| `website/index.html` | The page: hero chat, "why" comparison, how it works, app tour, for families, FAQ, closing |
 | `website/styles.css` | Site styles, plus the app-screen mockup styles carried over from the app design |
-| `website/script.js` | Mobile menu, the before/after-acceptance demo, and the app-tour tabs |
+| `website/script.js` | Mobile menu, the "Forward to family" share buttons, and the app-tour tabs |
+| `website/doodles.svg` | The wedding-doodle wallpaper tile behind every page |
 | `website/favicon.svg` | The gold lotus mark on maroon |
 
 To view it locally, open `website/index.html` in a browser, or serve the folder:
@@ -19,20 +20,19 @@ To view it locally, open `website/index.html` in a browser, or serve the folder:
 npx serve website
 ```
 
-To deploy, point any static host (Vercel, Netlify, GitHub Pages) at the `website/` folder. No build command is needed.
+It's deployed on Vercel from this repo with the project root directory set to `website`. There's no build command.
 
 ### Design
 
-The site follows the app's FINAL UI design:
+- A dark chat-wallpaper look: a charcoal `#0B141A` background covered in faint line doodles of wedding things (diya, kalash, marigold, rings, mangalsutra, garland, laddoos, chai, shehnai, dhol, doli, mandap), plus the double "forward" arrow.
+- The idea behind the page is that families forward biodatas around group chats with the full address and phone number inside. Sangam Setu is the alternative, so the hero is a family group chat and the FAQ reads as questions and replies.
+- Brand accents come from the app: maroon `#46001C` → crimson `#AC0045` bubbles and buttons, and the gold lotus `#E0AD38`.
+- Inter for text. Rozha One (Latin and Devanagari) for headlines only.
+- The phone mockups use the app's own screens, which are light.
 
-- Brand gradient `#46001C` → `#AC0045`, gold lotus `#B28A2A` / `#E0AD38`
-- Inter for text. Rozha One (Latin and Devanagari) for headlines only
-- The phone mockups use the app's own screens: home feed, profile before and after acceptance, requests, connections, and the profile tab
-
-The site follows the viewer's light or dark system setting. The phone mockups always stay light, because the app is light-only.
+To change the wallpaper, edit the icons in `scripts/make_doodles.py` and run `python3 scripts/make_doodles.py`.
 
 ### Before launch
 
-- Replace the "Coming soon" badges in the `#launch` section with the real Play Store and App Store links.
-- Add Terms and Privacy Policy pages and link them from the footer. The app's sign-in screen already refers to both.
-- Profile photos in the mockups are placeholder silhouettes. Names and phone numbers are example data.
+- Add Terms and Privacy Policy pages and link them from the footer.
+- Names, photos and phone numbers in the chat and phone previews are example data.

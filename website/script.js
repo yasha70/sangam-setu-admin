@@ -21,28 +21,55 @@
     }
   });
 
-  // Privacy demo: profile before and after a request is accepted
-  var notes = {
-    before: 'Before a request is accepted, the contact number is locked. The address shows only the city and state.',
-    after: 'After acceptance, both sides see the contact person and number. The address still shows only the city and state.'
+  // "Forward to family": the phone's share sheet where there is one, otherwise copy the link
+  var toast = document.getElementById('toast');
+  var toastTimer;
+  function showToast(text) {
+    toast.textContent = text;
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.hidden = true; }, 3200);
+  }
+  var shareData = {
+    title: 'Sangam Setu',
+    text: 'Biodata forward karne se pehle ye dekhiye: Sangam Setu, verified profiles for families.',
+    url: location.origin + location.pathname
   };
-  var demoButtons = document.querySelectorAll('[data-demo]');
-  var demoScreens = document.querySelectorAll('[data-demo-screen]');
-  var demoNote = document.getElementById('demo-note');
-  demoButtons.forEach(function (btn) {
+  function copyLink() {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareData.url).then(function () {
+        showToast('Link copied. Paste it in your family group.');
+      }, function () {
+        showToast('Copy this link: ' + shareData.url);
+      });
+    } else {
+      showToast('Copy this link: ' + shareData.url);
+    }
+  }
+  document.querySelectorAll('[data-share]').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var state = btn.getAttribute('data-demo');
-      demoButtons.forEach(function (b) {
-        b.setAttribute('aria-pressed', String(b === btn));
-      });
-      demoScreens.forEach(function (s) {
-        s.hidden = s.getAttribute('data-demo-screen') !== state;
-      });
-      demoNote.textContent = notes[state];
+      if (navigator.share) {
+        navigator.share(shareData).catch(function (err) {
+          if (err && err.name !== 'AbortError') copyLink();
+        });
+      } else {
+        copyLink();
+      }
     });
   });
 
-  // App tour: tabs switch both the description panel and the phone screen
+  // The floating forward button appears once the hero is out of view
+  var fab = document.getElementById('fab');
+  var hero = document.querySelector('.hero');
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      fab.classList.toggle('away', entries[0].isIntersecting);
+    }).observe(hero);
+  } else {
+    fab.classList.remove('away');
+  }
+
+  // Tour: tabs switch both the description and the phone screen
   var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"][data-tab]'));
   var screens = document.querySelectorAll('[data-screen]');
   var navItems = document.querySelectorAll('[data-nav]');
@@ -77,7 +104,7 @@
       }
     });
   });
-  // The phone's own bottom bar works too, for mouse and touch users
+  // The phone's own bottom bar switches screens too
   navItems.forEach(function (n) {
     n.style.cursor = 'pointer';
     n.addEventListener('click', function () {
