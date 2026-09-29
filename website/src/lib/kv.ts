@@ -38,7 +38,7 @@ function redisEnv() {
 }
 
 export function isDatabaseConfigured() {
-  return redisEnv() !== null || process.env.NODE_ENV !== "production";
+  return redisEnv() !== null || process.env.NODE_ENV !== "production" || process.env.SANGAM_MEMORY_DB === "1";
 }
 
 class UpstashKV implements KV {

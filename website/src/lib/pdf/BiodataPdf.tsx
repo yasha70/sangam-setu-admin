@@ -157,6 +157,12 @@ function formatTime(t?: string) {
 
 type Row = [string, string | undefined];
 
+function formatPhone(p?: string) {
+  if (!p) return undefined;
+  const d = p.replace(/\D/g, "").replace(/^91(?=\d{10}$)/, "");
+  return d.length === 10 ? `+91 ${d.slice(0, 5)} ${d.slice(5)}` : p;
+}
+
 export type PdfOptions = {
   template: PdfTemplateId;
   includeContact: boolean;
@@ -215,7 +221,7 @@ export function BiodataPdf({ bio, opts }: { bio: Biodata; opts: PdfOptions }) {
   const contact: Row[] = opts.includeContact
     ? [
         ["Contact person", [v("contactName"), v("contactRelation")].filter(Boolean).join(" · ") || undefined],
-        ["Mobile", v("contactPhone") ? `+91 ${v("contactPhone")!.replace(/^\+?91\s?/, "")}` : undefined],
+        ["Mobile", formatPhone(v("contactPhone"))],
         ["Email", v("contactEmail")],
         ...(opts.includeAddress ? ([["Address", v("address")]] as Row[]) : []),
       ]
@@ -269,27 +275,30 @@ export function BiodataPdf({ bio, opts }: { bio: Biodata; opts: PdfOptions }) {
           </View>
         </View>
 
-        {v("about") || v("hobbies") ? (
-          <View style={s.section} wrap={false}>
-            <SectionTitle title="About" s={s} t={t} />
-            {v("about") ? <Text style={s.para}>{v("about")}</Text> : null}
-            {v("hobbies") ? (
-              <Text style={[s.para, { marginTop: 4 }]}>
-                <Text style={{ fontWeight: 600, color: t.label }}>Hobbies  </Text>
-                {v("hobbies")}
-              </Text>
+        {v("about") || v("hobbies") || v("expectations") ? (
+          <View style={s.cols} wrap={false}>
+            {v("about") || v("hobbies") ? (
+              <View style={[s.col, s.section]}>
+                <SectionTitle title="About" s={s} t={t} />
+                {v("about") ? <Text style={s.para}>{v("about")}</Text> : null}
+                {v("hobbies") ? (
+                  <Text style={[s.para, { marginTop: 4 }]}>
+                    <Text style={{ fontWeight: 600, color: t.label }}>Hobbies  </Text>
+                    {v("hobbies")}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
+            {v("expectations") ? (
+              <View style={[s.col, s.section]}>
+                <SectionTitle title="Partner expectations" s={s} t={t} />
+                <Text style={s.para}>{v("expectations")}</Text>
+              </View>
             ) : null}
           </View>
         ) : null}
 
-        {v("expectations") ? (
-          <View style={s.section} wrap={false}>
-            <SectionTitle title="Partner expectations" s={s} t={t} />
-            <Text style={s.para}>{v("expectations")}</Text>
-          </View>
-        ) : null}
-
-        {contact.some((r) => r[1]) ? <Section title="Contact" rows={contact} s={s} t={t} /> : null}
+        {contact.some((r) => r[1]) ? <Section title="Contact" rows={contact} s={s} t={t} twoCol /> : null}
 
         {extraPhotos.length ? (
           <View style={s.section} wrap={false}>
@@ -351,9 +360,6 @@ function Decor({ template, t }: { template: PdfTemplateId; t: Theme }) {
         <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} fixed>
           <Svg width={W} height={H} viewBox={`0 0 ${W} ${H}`}>
             <Rect x="16" y="16" width={W - 32} height={H - 32} fill="none" stroke={t.gold} strokeWidth={0.8} />
-            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <Circle key={i} cx={W / 2 - 64 + i * 16} cy={H - 30} r={1.6} fill={t.gold} />
-            ))}
           </Svg>
         </View>
         <View style={{ position: "absolute", top: 0, left: 0, right: 0, height: 210 }}>
@@ -436,19 +442,19 @@ function makeStyles(t: Theme) {
     name: { fontFamily: SERIF, fontWeight: 700, fontSize: 30, color: t.headerInk, textAlign: "center", lineHeight: 1.15 },
     tagline: { fontSize: 9.5, color: t.headerSub, marginTop: 3, letterSpacing: 0.3 },
     topRow: { flexDirection: "row", alignItems: "flex-start" },
-    photoCol: { width: 168, alignItems: "center" },
-    photoFrame: { width: 168, height: 212, borderRadius: 10, borderWidth: 2.5, borderColor: t.photoBorder, overflow: "hidden", backgroundColor: t.chipBg },
+    photoCol: { width: 160, alignItems: "center" },
+    photoFrame: { width: 160, height: 200, borderRadius: 10, borderWidth: 2.5, borderColor: t.photoBorder, overflow: "hidden", backgroundColor: t.chipBg },
     photo: { width: "100%", height: "100%", objectFit: "cover" },
     cols: { flexDirection: "row", gap: 22 },
     col: { flex: 1 },
-    section: { marginBottom: 12 },
+    section: { marginBottom: 10 },
     sectionHead: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
     sectionTitle: { fontFamily: SERIF, fontWeight: 700, fontSize: 13, color: t.accent },
     sectionRule: { flex: 1, height: 0.8, backgroundColor: t.rule, marginLeft: 8 },
-    row: { flexDirection: "row", paddingVertical: 2.4 },
+    row: { flexDirection: "row", paddingVertical: 1.7 },
     label: { width: 96, color: t.label, fontWeight: 500 },
     value: { flex: 1, color: t.ink, fontWeight: 500 },
-    para: { color: t.ink, lineHeight: 1.5 },
+    para: { color: t.ink },
     footer: { position: "absolute", bottom: 24, left: 0, right: 0, alignItems: "center" },
     footerText: { fontSize: 7.5, color: t.muted, letterSpacing: 0.4 },
   });

@@ -138,6 +138,7 @@ export function BiodataEditor({ initial, welcome }: { initial: Biodata; welcome:
             <label className="field wide">
               <span>Top line (optional)</span>
               <input
+                id="f-heading"
                 value={values.heading ?? ""}
                 maxLength={80}
                 list="heading-ideas"
