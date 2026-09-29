@@ -1,0 +1,5 @@
+{
+  "name": "vivahkala",
+  "private": true,
+  "engines": { "node": ">=20" }
+}

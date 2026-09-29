@@ -51,3 +51,31 @@ A festive wedding look: warm ivory `#FFF5E8` covered in colourful line doodles o
 - Add Terms and Privacy Policy pages.
 - Mobile numbers aren't verified yet. Add an SMS OTP provider (for example MSG91) to verify numbers at sign-up.
 - Add an admin view to review reported or blocked profiles.
+
+## VivahKala (wedding invitation cards and videos)
+
+`vivahkala/` is a separate site, deployed on Vercel as the `vivahkala` project (root directory `vivahkala`, no build step) at https://vivahkala.vercel.app.
+
+- `index.html` the whole app: card designer, animated video maker, and the Plan page. Phones get a top bar, a bottom tab bar (Details, Card, Video, Plan) and a download bar above it; screens 1024px and wider get a side menu with the plan card, a large preview and the controls beside it.
+- `admin.html` the owner's panel at `/admin`: payments to approve, customers (give Pro days, remove Pro, new password, CSV), earnings, and Settings (UPI ID, prices, free trial days).
+- `api/` Vercel functions, the same model as PakkaBill: `auth` (sign up, log in, mobile number and password), `me`, `config`, `pay` (submit a UTR, list my payments), `admin`.
+- `qrcode.js` QR code generator (qrcode-generator 1.4.4, MIT) for the UPI QR.
+
+### Plans
+
+| | Free | Pro (monthly or yearly) |
+|---|---|---|
+| Card designs | 6 | all 20 |
+| Video designs | 2 | all 7 |
+| Downloads | small "Made with VivahKala" mark | no mark |
+| PDF, HD 720p video, own song | – | ✓ |
+
+Free users can preview every design; Pro is asked for when they download. Payment is by UPI QR: the customer pays the owner's UPI ID, submits the 12-digit UTR, and the owner approves it in `/admin`, which adds 30 or 365 days (renewals add on top). New accounts get a free Pro trial (`trialDays`, default 1, 0 turns it off). Until a UPI ID is saved in `/admin`, or if the server can't be reached, everything is free.
+
+### Setting it up on Vercel
+
+1. Connect the existing Upstash Redis database to the `vivahkala` project (Storage → Connect). Its keys are stored under `vk:`, so it can share the database with PakkaBill and Sangam Setu.
+2. Add `ADMIN_PASSWORD` (8+ characters) and redeploy.
+3. Open `/admin` → Settings, save your UPI ID, the name customers see, and prices (default ₹149 a month, ₹499 a year).
+
+Plan checks run in the browser, so a technical user could get around them. Payments only count once the owner approves them.

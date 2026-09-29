@@ -21,7 +21,6 @@ body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Poppins,syste
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
 .mark{width:32px;height:32px;flex:none;border-radius:50%;background:radial-gradient(circle,#7a2e0e 0 14%,#ffcc4d 15% 38%,#f59e0b 39% 62%,#ea580c 63% 100%)}
 .brand b{font:400 20px 'Yatra One',serif;color:var(--brand);white-space:nowrap}
-@media(max-width:460px){.brand b{display:none}}
 .tabs{display:flex;background:var(--surface2);border-radius:999px;padding:4px;gap:2px}
 .tabs button{border:0;background:none;color:var(--muted);font:600 14px Poppins,sans-serif;padding:8px 16px;border-radius:999px;cursor:pointer;min-height:40px}
 .tabs button[aria-selected="true"]{background:var(--brand);color:var(--on-brand)}
@@ -30,7 +29,8 @@ main{max-width:1180px;margin:0 auto;padding:16px 16px 48px}
 h1{font:400 26px/1.2 'Yatra One',serif;margin:4px 0 6px}
 h2{font:400 19px 'Yatra One',serif;margin:0 0 10px}
 .lede{color:var(--muted);margin:0 0 14px;max-width:60ch}
-.editor{display:grid;gap:20px}
+.editor{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+.editor>*,.plan-grid>*,.mainwrap{min-width:0}
 @media(min-width:900px){.editor{grid-template-columns:minmax(300px,440px) 1fr;align-items:start}.stage-col{position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px)}}
 .stage{background:var(--surface2);border-radius:18px;padding:14px;display:flex;justify-content:center}
 .stage canvas{display:block;max-width:100%;max-height:54vh;width:auto;height:auto;border-radius:6px;box-shadow:var(--shadow)}
@@ -98,12 +98,101 @@ textarea{resize:vertical}
 .toastw{position:fixed;left:0;right:0;bottom:0;padding:0 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;pointer-events:none;z-index:60}
 .toast{background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font:500 14px Poppins,sans-serif;opacity:0;transform:translateY(10px);transition:opacity .2s,transform .2s;max-width:480px}
 .toast.show{opacity:1;transform:none}
+
+/* ---------- layout: phone (default) ---------- */
+.side{display:none}
+.topbar{box-shadow:0 1px 0 var(--line)}
+.pchip{border:1.5px solid var(--line);background:var(--surface);color:var(--text);font:600 13px Poppins,sans-serif;border-radius:999px;padding:7px 14px;min-height:38px;cursor:pointer;white-space:nowrap}
+.pchip.pro{background:linear-gradient(135deg,#f6d27a,#e79a06);color:#3a1a00;border-color:transparent}
+.pchip.up{background:var(--brand);color:var(--on-brand);border-color:transparent}
+.phead{display:none}
+main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+body[data-tab="card"] main{padding-bottom:calc(160px + env(safe-area-inset-bottom,0px))}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+.bnav-b{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;font:600 11px Poppins,sans-serif;color:var(--muted);padding:4px 0;min-height:54px;border-radius:14px;cursor:pointer}
+.bnav-b svg,.snav-b svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bnav-b svg{padding:3px 14px;box-sizing:content-box;border-radius:999px}
+.bnav-b[aria-current="page"]{color:var(--brand)}
+.bnav-b[aria-current="page"] svg{background:var(--surface2)}
+.mbar{position:fixed;left:0;right:0;bottom:calc(67px + env(safe-area-inset-bottom,0px));z-index:29;display:none;gap:10px;padding:14px 16px 10px;background:linear-gradient(to bottom,transparent,var(--bg) 40%)}
+body[data-tab="card"] .mbar{display:flex}
+.mbar .btn{flex:1;box-shadow:var(--shadow)}.mbar .btn.ghost{flex:0 0 auto;background:var(--surface)}
+#cardActs{display:none}
+.stage canvas{max-height:46vh}
+.stage{padding:10px}
+.toastw{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+.editor .controls .block,.editor .controls .sec{border-radius:16px}
+/* ---------- plans ---------- */
+.plan-grid{display:grid;gap:14px}
+.prices{display:grid;gap:14px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.pcard.pro{border:2px solid var(--brand2);background:linear-gradient(180deg,rgba(231,154,6,.10),var(--surface) 40%)}
+.pcard h3{font:400 20px 'Yatra One',serif;margin:0}
+.pcard .amt{font:700 26px Poppins,sans-serif}.pcard .amt small{font-size:14px;color:var(--muted);font-weight:500}
+.perks{list-style:none;margin:0;padding:0;display:grid;gap:7px;font-size:14px}
+.perks li{display:flex;gap:8px;align-items:flex-start}.perks li::before{content:'✓';color:#2f8f4e;font-weight:700}
+.perks li.no::before{content:'–';color:var(--muted)}
+.planbtns{display:grid;gap:8px}
+.planbtns .btn{justify-content:space-between}
+.save{font:600 12px Poppins,sans-serif;background:#2f8f4e;color:#fff;border-radius:999px;padding:2px 8px}
+.probadge{position:absolute;top:8px;right:8px;background:linear-gradient(135deg,#f6d27a,#e79a06);color:#3a1a00;font:700 10px Poppins,sans-serif;letter-spacing:.06em;border-radius:6px;padding:2px 6px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.tpl{position:relative}
+.authtabs{display:flex;background:var(--surface2);border-radius:12px;padding:4px;gap:4px;margin-bottom:14px}
+.authtabs button{flex:1;border:0;background:none;border-radius:9px;padding:9px 6px;font:600 14px Poppins,sans-serif;color:var(--muted);cursor:pointer;min-height:40px}
+.authtabs button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.14)}
+.form{display:grid;gap:12px}
+.err{color:#c0262d;font-size:13px;margin:0;min-height:1em}
+.status{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;background:var(--surface2);margin-bottom:12px}
+.status b{display:block}.status span{font-size:13px;color:var(--muted)}
+.crown{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--surface);font-size:20px}
+.orders{list-style:none;margin:0;padding:0;display:grid;gap:8px;font-size:14px}
+.orders li{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;flex-wrap:wrap}
+.tag{font:600 12px Poppins,sans-serif;border-radius:999px;padding:2px 9px;background:var(--surface2)}
+.tag.ok{background:#dcf3e3;color:#1d6b37}.tag.wait{background:#fff0cc;color:#7a5200}.tag.bad{background:#fde0e0;color:#8a1c1c}
+.qr{display:block;width:210px;height:210px;margin:8px 0;border-radius:12px;border:1px solid var(--line);image-rendering:pixelated;background:#fff}
+.steps{padding-left:20px;margin:12px 0;display:grid;gap:14px;font-size:14px}
+.utrrow{display:flex;flex-direction:row;gap:8px}.utrrow input{flex:1;width:auto;min-width:0}.utrrow .btn{flex:none}
+code{font:500 13px ui-monospace,Menlo,monospace;background:var(--surface2);padding:1px 6px;border-radius:6px}
+.fine{font-size:12px;color:var(--muted);margin:10px 0 0}
+.mx{float:right;border:0;background:none;font-size:26px;line-height:1;color:var(--muted);cursor:pointer;padding:0 4px}
+@media(min-width:620px){.prices{grid-template-columns:1fr 1fr}}
+/* ---------- layout: desktop ---------- */
+@media(min-width:1024px){
+ .topbar,.bnav,.mbar{display:none!important}
+ #cardActs{display:flex}
+ main,body[data-tab="card"] main{padding:28px 36px 56px;max-width:1360px}
+ .side{display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;width:252px;z-index:20;background:var(--surface);border-right:1px solid var(--line);padding:env(safe-area-inset-top,0px) 0 16px;overflow:auto}
+ .side-brand{display:flex;align-items:center;gap:10px;padding:18px 20px 12px}
+ .side-brand b{font:400 24px 'Yatra One',serif;color:var(--brand)}
+ .snav{display:grid;gap:4px;padding:18px 12px}
+ .snav-b{display:flex;align-items:center;gap:12px;border:0;background:none;color:var(--muted);font:600 15px Poppins,sans-serif;padding:11px 14px;border-radius:12px;cursor:pointer;text-align:left}
+ .snav-b:hover{background:var(--surface2);color:var(--text)}
+ .snav-b[aria-current="page"]{background:var(--brand);color:var(--on-brand)}
+ .plancard{margin:auto 14px 0;padding:16px;border-radius:16px;background:var(--surface2);display:grid;gap:10px;font-size:13px}
+ .plancard b{font:400 18px 'Yatra One',serif}
+ .mainwrap{margin-left:252px}
+ .phead{display:block;margin-bottom:18px}
+ .editor{grid-template-columns:minmax(380px,1fr) minmax(380px,460px);gap:32px}
+ .stage-col{position:sticky;top:28px}
+ .stage{padding:22px;border-radius:22px}
+ .stage canvas{max-height:calc(100vh - 260px)}
+ .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));overflow:visible}
+ .gallery .tpl{width:auto}
+ .plan-grid{grid-template-columns:minmax(300px,380px) 1fr;align-items:start}
+ .toastw{padding:0 16px 24px 268px}
+ .modal{padding-left:268px}
+}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<header class="topbar"><div class="topbar-in"><div class="brand"><span class="mark" aria-hidden="true"></span><b>VivahKala</b></div>
-<nav class="tabs" role="tablist" aria-label="Sections"><button role="tab" data-tab="details" aria-selected="false">Details</button><button role="tab" data-tab="card" aria-selected="true">Card</button><button role="tab" data-tab="video" aria-selected="false">Video</button></nav></div><div class="toran" aria-hidden="true"></div></header>
+<aside class="side" aria-label="VivahKala">
+ <div class="side-brand"><span class="mark" aria-hidden="true"></span><b>VivahKala</b></div><div class="toran" aria-hidden="true"></div>
+ <nav class="snav" aria-label="Sections"><button type="button" class="snav-b" data-tab="details" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="m13.5 6.5 4 4"/></svg><span>Details</span></button><button type="button" class="snav-b" data-tab="card" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M8 12h8M10 16h4"/></svg><span>Card</span></button><button type="button" class="snav-b" data-tab="video" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg><span>Video</span></button><button type="button" class="snav-b" data-tab="plan" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 8 4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg><span>Plan</span></button></nav>
+ <div class="plancard" id="sidePlan"></div>
+</aside>
+<div class="mainwrap">
+<header class="topbar"><div class="topbar-in"><div class="brand"><span class="mark" aria-hidden="true"></span><b>VivahKala</b></div><button type="button" class="pchip" id="planChip" data-goto="plan">Plans</button></div><div class="toran" aria-hidden="true"></div></header>
 <main>
 <section id="p-details" hidden>
  <h1>Wedding details</h1><p class="lede">Fill these once. The card and the video both use them.</p>
@@ -124,9 +213,9 @@ textarea{resize:vertical}
   <label class="field"><span>RSVP or contact</span><input data-k="rsvp"></label><label class="field"><span>Wedding hashtag</span><input data-k="hashtag"></label></div></details>
  <div class="row"><button class="btn" data-goto="card" type="button">See the card</button><button class="btn ghost" data-goto="video" type="button">Make the video</button></div>
 </section>
-<section id="p-card"><div class="editor">
+<section id="p-card"><div class="phead"><h1>Invitation card</h1><p class="lede">Pick a design, then download the card as an image or a print-ready PDF.</p></div><div class="editor">
  <div class="stage-col"><div class="stage"><canvas id="cardCv" aria-label="Invitation card preview"></canvas></div>
-  <div class="actions"><button class="btn" id="dlPng" type="button">Download image</button><button class="btn ghost" id="dlPdf" type="button">Download PDF</button><button class="btn ghost" id="shCard" type="button" hidden>Share</button></div></div>
+  <div class="actions" id="cardActs"><button class="btn" id="dlPng" type="button">Download image</button><button class="btn ghost" id="dlPdf" type="button">Download PDF</button><button class="btn ghost" id="shCard" type="button" hidden>Share</button></div></div>
  <div class="controls">
   <div class="block"><h2>Templates</h2><div class="chips" id="cats"></div><div class="gallery" id="gal"></div></div>
   <div class="block"><h2>Card type</h2><div class="seg" id="typeSeg"><button type="button" data-v="invite">Wedding invite</button><button type="button" data-v="save">Save the date</button><button type="button" data-v="events">Function schedule</button></div>
@@ -137,7 +226,7 @@ textarea{resize:vertical}
    <div class="row"><label class="btn ghost file">Choose photo<input type="file" accept="image/*" id="photoIn"></label><button class="btn ghost" id="photoDel" type="button" hidden>Remove photo</button><label class="check"><input type="checkbox" id="showPhoto"> Show on card</label></div></details>
   <button class="linkbtn" data-goto="details" type="button">Edit names, dates and functions</button>
  </div></div></section>
-<section id="p-video" hidden><div class="editor">
+<section id="p-video" hidden><div class="phead"><h1>Invitation video</h1><p class="lede">A 40-second animated invite with your names, dates and music, ready for WhatsApp.</p></div><div class="editor">
  <div class="stage-col"><div class="stage vid"><canvas id="vidCv" width="540" height="960" aria-label="Video preview"></canvas></div>
   <div class="player"><button class="btn round" id="playBtn" type="button" aria-label="Play preview">▶</button><input type="range" id="seek" min="0" max="40" step="0.01" value="0" aria-label="Preview position"><span class="time" id="tLbl">0:00 / 0:40</span></div>
   <div class="actions"><button class="btn" id="mkVid" type="button">Create video</button><button class="btn ghost" id="stopRec" type="button" hidden>Stop</button></div>
@@ -155,11 +244,20 @@ textarea{resize:vertical}
   <details class="sec"><summary>Video options</summary><div class="grid2"><label class="field"><span>Opening title</span><input data-k="title"></label><label class="field"><span>Quality</span><select id="quality"><option value="720">HD 720p</option><option value="540">540p, smaller file</option></select></label><label class="check"><input type="checkbox" id="vEvents"> Include the functions scene</label></div></details>
   <button class="linkbtn" data-goto="details" type="button">Edit names, dates and functions</button>
  </div></div></section>
+<section id="p-plan" hidden>
+ <h1>Plans &amp; account</h1><p class="lede" id="planLede">Free to start. Pro unlocks every design, clean downloads and HD video.</p>
+ <div class="plan-grid"><div class="block" id="acctBox"></div><div id="priceBox"></div></div>
+ <div class="block" id="ordersBox" hidden></div>
+</section>
 </main>
+</div>
+<nav class="bnav" aria-label="Sections"><button type="button" class="bnav-b" data-tab="details" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="m13.5 6.5 4 4"/></svg><span>Details</span></button><button type="button" class="bnav-b" data-tab="card" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M8 12h8M10 16h4"/></svg><span>Card</span></button><button type="button" class="bnav-b" data-tab="video" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg><span>Video</span></button><button type="button" class="bnav-b" data-tab="plan" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 8 4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg><span>Plan</span></button></nav>
+<div class="mbar" id="mbar"><button class="btn" type="button" data-proxy="dlPng">Download image</button><button class="btn ghost" type="button" data-proxy="dlPdf">PDF</button></div>
 <div class="modal" id="cropM" hidden><div class="mcard" role="dialog" aria-modal="true" aria-labelledby="cropT"><h3 id="cropT">Fit the face in the oval</h3><p class="hint">Drag to move. Pinch or use the slider to zoom. Keep the eyes on the dotted line.</p>
  <canvas id="cropCanvas" width="600" height="732"></canvas><label class="field" style="margin-top:10px"><span>Zoom</span><input type="range" id="cropZoom" min="0.5" max="4" step="0.01" value="1"></label><label class="field"><span>Tilt</span><input type="range" id="cropRot" min="-30" max="30" step="1" value="0"></label>
  <div class="mact"><button class="btn ghost" id="cropNo" type="button">Cancel</button><button class="btn" id="cropOk" type="button">Use this face</button></div></div></div>
 <div class="modal" id="saveM" hidden><div class="mcard" role="dialog" aria-modal="true" aria-labelledby="saveT"><h3 id="saveT">Save your file</h3><p class="hint" id="saveHint">Press and hold the image to save it, or right-click and choose "Save image as".</p><div class="slot" id="saveSlot"></div><div class="mact"><button class="btn" id="saveOk" type="button">Done</button></div></div></div>
+<div class="modal" id="payM" hidden><div class="mcard" role="dialog" aria-modal="true" aria-labelledby="payT" id="payCard"></div></div>
 <div class="toastw" aria-live="polite"><div class="toast" id="toast"></div></div>
 <script>
 'use strict';
@@ -642,7 +740,7 @@ let cardRaf=0,thumbT=0;
 function renderCard(){cancelAnimationFrame(cardRaf);cardRaf=requestAnimationFrame(()=>{const[W0,H0]=SIZES[S.size],cv=$('#cardCv'),k=Math.min(1,1100/W0);cv.width=Math.round(W0*k);cv.height=Math.round(H0*k);drawCard(cv.getContext('2d'),cv.width,cv.height,tplOf(),S,PHOTO);});clearTimeout(thumbT);thumbT=setTimeout(renderThumbs,450);}
 function renderThumbs(){const[W0,H0]=SIZES[S.size];$$('#gal .tpl').forEach(b=>{const cv=b.querySelector('canvas'),k=210/W0;cv.width=210;cv.height=Math.round(H0*k);drawCard(cv.getContext('2d'),cv.width,cv.height,CARD_T.find(t=>t.id===b.dataset.id),S,PHOTO);});}
 function buildCardUI(){const cats=['All',...new Set(CARD_T.map(t=>t.cat))],cw=$('#cats');cats.forEach((c,i)=>{const b=document.createElement('button');b.className='chip';b.type='button';b.textContent=c;b.setAttribute('aria-pressed',i?'false':'true');b.onclick=()=>{$$('#cats .chip').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));$$('#gal .tpl').forEach(t=>t.hidden=!(c==='All'||t.dataset.cat===c));};cw.appendChild(b);});
-  CARD_T.forEach(t=>{const b=document.createElement('button');b.type='button';b.className='tpl';b.dataset.id=t.id;b.dataset.cat=t.cat;b.innerHTML='<canvas></canvas>';b.appendChild(document.createTextNode(t.name));b.onclick=()=>{S.tpl=t.id;S.colors={ink:'',accent:'',text:''};syncCard();renderCard();persist();};$('#gal').appendChild(b);});
+  CARD_T.forEach(t=>{const b=document.createElement('button');b.type='button';b.className='tpl';b.dataset.id=t.id;b.dataset.cat=t.cat;b.innerHTML='<canvas></canvas><span class="probadge" hidden>PRO</span>';b.appendChild(document.createTextNode(t.name));b.onclick=()=>{S.tpl=t.id;S.colors={ink:'',accent:'',text:''};syncCard();renderCard();persist();};$('#gal').appendChild(b);});
   const nf=$('#nameFont');nf.add(new Option("Template's choice",'auto'));Object.keys(NAME_FONTS).forEach(f=>nf.add(new Option(f,f)));
   for(const[id,key]of[['#typeSeg','type'],['#sizeSeg','size']])$$(id+' button').forEach(b=>b.onclick=()=>{S[key]=b.dataset.v;syncCard();renderCard();persist();});
   nf.onchange=()=>{S.nameFont=nf.value;renderCard();persist();};
@@ -651,15 +749,15 @@ function buildCardUI(){const cats=['All',...new Set(CARD_T.map(t=>t.cat))],cw=$(
   $('#showEvents').onchange=e=>{S.showEvents=e.target.checked;renderCard();persist();};$('#showPhoto').onchange=e=>{S.showPhoto=e.target.checked;renderCard();persist();};
   $('#photoIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const im=await fileImg(f),k=Math.min(1,1400/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);S.photo=cv.toDataURL('image/jpeg',0.88);PHOTO=await loadImg(S.photo);S.showPhoto=true;syncCard();renderCard();persist();toast('Photo added');}catch(err){toast('That file could not be opened as a photo. Try a JPG or PNG.');}};
   $('#photoDel').onclick=()=>{S.photo=null;PHOTO=null;syncCard();renderCard();persist();};
-  $('#dlPng').onclick=()=>exportCard('png');$('#dlPdf').onclick=()=>exportCard('pdf');$('#shCard').onclick=async()=>{const b=await cardBlob();shareBlob(b,fname('png'));};}
+  $('#dlPng').onclick=()=>exportCard('png');$('#dlPdf').onclick=()=>exportCard('pdf');$('#shCard').onclick=async()=>{if(proCard(S.tpl)&&!gate('tpl'))return;const b=await cardBlob();shareBlob(b,fname('png'));};}
 function syncCard(){$$('#gal .tpl').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===S.tpl?'true':'false'));$$('#typeSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.type?'true':'false'));$$('#sizeSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.size?'true':'false'));
   const P=tplOf().pal;$('#colInk').value=S.colors.ink||P.ink;$('#colAccent').value=S.colors.accent||P.accent;$('#colText').value=S.colors.text||P.text;$('#nameFont').value=S.nameFont;$('#showEvents').checked=!!S.showEvents;$('#showPhoto').checked=!!S.showPhoto;$('#photoDel').hidden=!S.photo;}
 function slug(s){return String(s||'').trim().replace(/\s+/g,'-').replace(/[^\p{L}\p{N}\p{M}-]/gu,'')||'wedding';}
 function fname(ext){return`${slug(S.groom)}-${slug(S.bride)}-${S.type==='save'?'save-the-date':S.type==='events'?'functions':'invitation'}.${ext}`;}
-function fullCard(){const[W,H]=SIZES[S.size],cv=document.createElement('canvas');cv.width=W;cv.height=H;drawCard(cv.getContext('2d'),W,H,tplOf(),S,PHOTO);return cv;}
+function fullCard(){const[W,H]=SIZES[S.size],cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');drawCard(c,W,H,tplOf(),S,PHOTO);if(!isPro())drawMark(c,W,H);return cv;}
 const cardBlob=()=>new Promise(r=>fullCard().toBlob(r,'image/png'));
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
-async function exportCard(kind){try{if(kind==='png'){await saveBlob(await cardBlob(),fname('png'));return;}
+async function exportCard(kind){if(proCard(S.tpl)&&!gate('tpl'))return;if(kind==='pdf'&&!gate('pdf'))return;try{if(kind==='png'){await saveBlob(await cardBlob(),fname('png'));return;}
   if(!window.jspdf)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');const[W,H]=SIZES[S.size],iw=S.size==='portrait'?5:S.size==='square'?6:4.5,ih=iw*H/W;
   const pdf=new window.jspdf.jsPDF({orientation:'portrait',unit:'in',format:[iw,ih]});pdf.addImage(fullCard().toDataURL('image/jpeg',0.95),'JPEG',0,0,iw,ih);await saveBlob(pdf.output('blob'),fname('pdf'));}
  catch(e){toast(kind==='pdf'?'PDF could not be made here. Download the image instead.':'Could not create the image.');}}
@@ -704,17 +802,17 @@ function pause(){Pl.on=false;cancelAnimationFrame(Pl.raf);Music.stop();$('#playB
 function drawFaceCard(kind){const cv=$(`.face[data-kind="${kind}"] canvas`),c=cv.getContext('2d');c.clearRect(0,0,180,220);faceOval(c,FACE[kind]||PH[kind],90,110,170,208);$(`[data-adj="${kind}"]`).hidden=!FACE[kind];$(`[data-del="${kind}"]`).hidden=!FACE[kind];}
 function skinOf(cv){try{const c=cv.getContext('2d'),d=c.getImageData(cv.width*0.3,cv.height*0.58,cv.width*0.4,cv.height*0.14).data;let r=0,g=0,b=0,n=0;for(let i=0;i<d.length;i+=16){r+=d[i];g+=d[i+1];b+=d[i+2];n++;}const h=x=>Math.round(x/n).toString(16).padStart(2,'0');return'#'+h(r)+h(g)+h(b);}catch(e){return null;}}
 async function setFace(kind,url){if(!url){FACE[kind]=null;SKIN[kind]=kind==='groom'?'#d9a07a':'#e2ab86';}else{const im=await loadImg(url),cv=document.createElement('canvas');cv.width=360;cv.height=440;cv.getContext('2d').drawImage(im,0,0,360,440);FACE[kind]=cv;SKIN[kind]=skinOf(cv)||SKIN[kind];}drawFaceCard(kind);refreshV();}
-function buildVideoUI(){VID_T.forEach(T=>{const b=document.createElement('button');b.type='button';b.className='tpl';b.dataset.id=T.id;b.innerHTML='<canvas></canvas>';b.appendChild(document.createTextNode(T.name));b.onclick=()=>{S.vtpl=T.id;S.gCol='';S.bCol='';syncVid();refreshV();persist();};$('#vgal').appendChild(b);});
+function buildVideoUI(){VID_T.forEach(T=>{const b=document.createElement('button');b.type='button';b.className='tpl';b.dataset.id=T.id;b.innerHTML='<canvas></canvas><span class="probadge" hidden>PRO</span>';b.appendChild(document.createTextNode(T.name));b.onclick=()=>{S.vtpl=T.id;S.gCol='';S.bCol='';syncVid();refreshV();persist();};$('#vgal').appendChild(b);});
   $('#playBtn').onclick=()=>Pl.on?pause():play();$('#seek').oninput=e=>{Pl.t=+e.target.value;if(Pl.on){Music.start(S.music,Pl.t,X.TL.total,S.vol);}else vDraw(Pl.t);};
   $$('[data-face]').forEach(inp=>inp.onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const im=await fileImg(f);ORIG[inp.dataset.face]=im;Crop.open(inp.dataset.face,im);}catch(err){toast('That file could not be opened as a photo. Try a JPG or PNG.');}});
   $$('[data-adj]').forEach(b=>b.onclick=()=>{const k=b.dataset.adj;Crop.open(k,ORIG[k]||FACE[k]);});$$('[data-del]').forEach(b=>b.onclick=()=>{const k=b.dataset.del;S.faces[k]=null;ORIG[k]=null;setFace(k,null);persist();});
   $('#gCol').oninput=e=>{S.gCol=e.target.value;refreshV();persist();};$('#bCol').oninput=e=>{S.bCol=e.target.value;refreshV();persist();};$('#turban').onchange=e=>{S.turban=e.target.value;refreshV();persist();};
   $('#resetOut').onclick=()=>{S.gCol='';S.bCol='';S.turban='auto';syncVid();refreshV();persist();};
-  $('#music').onchange=e=>{S.music=e.target.value;syncVid();persist();if(Pl.on)Music.start(S.music,Pl.t,X.TL.total,S.vol);};$('#vol').oninput=e=>{S.vol=+e.target.value;persist();if(Music.master&&Music.actx)Music.master.gain.setTargetAtTime(S.vol,Music.actx.currentTime,0.05);};
+  $('#music').onchange=e=>{if(e.target.value==='own'&&!gate('song')){e.target.value=S.music;return;}S.music=e.target.value;syncVid();persist();if(Pl.on)Music.start(S.music,Pl.t,X.TL.total,S.vol);};$('#vol').oninput=e=>{S.vol=+e.target.value;persist();if(Music.master&&Music.actx)Music.master.gain.setTargetAtTime(S.vol,Music.actx.currentTime,0.05);};
   $('#songIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const a=Music.ctx();if(!a)return toast('Audio is not supported in this browser.');try{Music.buffer=await a.decodeAudioData(await f.arrayBuffer());$('#songName').textContent=f.name;toast('Song ready');}catch(err){toast('That song could not be read. Try an MP3 or M4A file.');}};
-  $('#quality').onchange=e=>{S.quality=e.target.value;persist();};$('#vEvents').onchange=e=>{S.vEvents=e.target.checked;refreshV();persist();};
+  $('#quality').onchange=e=>{if(e.target.value==='720'&&!gate('hd')){e.target.value='540';return;}S.quality=e.target.value;persist();};$('#vEvents').onchange=e=>{S.vEvents=e.target.checked;refreshV();persist();};
   $('#mkVid').onclick=record;$('#stopRec').onclick=()=>{recStop=true;};$('#dlVid').onclick=()=>lastVid&&saveBlob(lastVid.blob,lastVid.name);$('#shVid').onclick=()=>lastVid&&shareBlob(lastVid.blob,lastVid.name);}
-function syncVid(){$$('#vgal .tpl').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===S.vtpl?'true':'false'));const T=vtOf();$('#gCol').value=S.gCol||T.groom.coat;$('#bCol').value=S.bCol||T.bride.skirt;$('#turban').value=S.turban;$('#music').value=S.music;$('#vol').value=S.vol;$('#quality').value=S.quality;$('#vEvents').checked=!!S.vEvents;$('#songRow').hidden=S.music!=='own';}
+function syncVid(){$$('#vgal .tpl').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===S.vtpl?'true':'false'));const T=vtOf();$('#gCol').value=S.gCol||T.groom.coat;$('#bCol').value=S.bCol||T.bride.skirt;$('#turban').value=S.turban;$('#music').value=S.music;$('#vol').value=S.vol;$('#quality').value=isPro()?S.quality:'540';$('#vEvents').checked=!!S.vEvents;$('#songRow').hidden=S.music!=='own';}
 
 /* ---------- face cropper ---------- */
 const Crop={kind:null,img:null,x:0,y:0,base:1,z:1,rot:0,pts:new Map(),d0:0,z0:1,
@@ -736,23 +834,121 @@ const Crop={kind:null,img:null,x:0,y:0,base:1,z:1,rot:0,pts:new Map(),d0:0,z0:1,
 let recStop=false,lastVid=null;
 function pickMime(aud){const L=aud?['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']:['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];for(const m of L){try{if(MediaRecorder.isTypeSupported(m))return m;}catch(e){}}return'';}
 async function record(){const cv=$('#vidCv');if(!window.MediaRecorder||!cv.captureStream){toast('This browser cannot record video. Try Chrome on Android or a computer.');return;}
-  pause();recording=true;recStop=false;const q=S.quality==='540'?[540,960]:[720,1280];cv.width=q[0];cv.height=q[1];const total=X.TL.total,stream=cv.captureStream(30);let dest=null;const a=Music.ctx();
+  if(proVid(S.vtpl)&&!gate('vtpl'))return;if(S.music==='own'&&!gate('song'))return;const pro=isPro();
+  pause();recording=true;recStop=false;const q=S.quality==='540'||!pro?[540,960]:[720,1280];cv.width=q[0];cv.height=q[1];const total=X.TL.total,stream=cv.captureStream(30);let dest=null;const a=Music.ctx();
   const needAudio=a&&S.music!=='none'&&!(S.music==='own'&&!Music.buffer);if(needAudio){try{if(a.state==='suspended')await a.resume();dest=a.createMediaStreamDestination();dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));}catch(e){dest=null;}}
   const mime=pickMime(!!dest);let rec;try{rec=new MediaRecorder(stream,mime?{mimeType:mime,videoBitsPerSecond:6e6}:{videoBitsPerSecond:6e6});}catch(e){rec=new MediaRecorder(stream);}
   const chunks=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data);};const stopped=new Promise(r=>rec.onstop=r);
   $('#mkVid').disabled=true;$('#stopRec').hidden=false;$('#recBox').hidden=false;$('#resBox').hidden=true;$('#playBtn').disabled=true;$('#seek').disabled=true;
   rec.start(500);if(dest)Music.start(S.music,0,total,S.vol,dest);const t0=performance.now(),c=cv.getContext('2d');
-  await new Promise(res=>{const step=()=>{const t=(performance.now()-t0)/1000;if(t>=total||recStop){res();return;}drawVideoFrame(c,cv.width,cv.height,t,X,S);$('#recBar').style.width=(t/total*100).toFixed(1)+'%';$('#tLbl').textContent=`${mmss(t)} / ${mmss(total)}`;requestAnimationFrame(step);};requestAnimationFrame(step);});
+  await new Promise(res=>{const step=()=>{const t=(performance.now()-t0)/1000;if(t>=total||recStop){res();return;}drawVideoFrame(c,cv.width,cv.height,t,X,S);if(!pro)drawMark(c,cv.width,cv.height);$('#recBar').style.width=(t/total*100).toFixed(1)+'%';$('#tLbl').textContent=`${mmss(t)} / ${mmss(total)}`;requestAnimationFrame(step);};requestAnimationFrame(step);});
   await new Promise(r=>setTimeout(r,150));rec.stop();await stopped;Music.stop();stream.getTracks().forEach(t=>t.stop());recording=false;cv.width=540;cv.height=960;Pl.t=0;vDraw(0);
   $('#mkVid').disabled=false;$('#stopRec').hidden=true;$('#recBox').hidden=true;$('#playBtn').disabled=false;$('#seek').disabled=false;
   if(recStop){toast('Recording stopped');return;}const type=(rec.mimeType||mime||'video/webm').split(';')[0],ext=type.includes('mp4')?'mp4':'webm',blob=new Blob(chunks,{type});
   lastVid={blob,name:`${slug(S.groom)}-weds-${slug(S.bride)}.${ext}`};const v=$('#resVid');if(v.src)URL.revokeObjectURL(v.src);v.src=URL.createObjectURL(blob);$('#resBox').hidden=false;$('#shVid').hidden=!navigator.canShare;
   $('#resNote').textContent=ext==='webm'?'This browser saves videos as WebM. If WhatsApp does not accept it, record again in Chrome (recent version) or Safari to get MP4.':'MP4 video, ready for WhatsApp and Instagram.';toast('Your video is ready');}
 
+/* ---------- account & Pro (same model as PakkaBill) ----------
+   Mobile number + password accounts, a free Pro trial for new accounts, and monthly or
+   yearly Pro paid by UPI: the customer scans the owner's QR, submits the 12-digit UTR,
+   and the owner approves it in /admin. Until a UPI ID is saved in /admin, or if the
+   server can't be reached, everything stays free. */
+const FREE_CARD=new Set(['royal-maroon','mangal-red','genda-phool','blush-florals','minimal-ivory','midnight']),FREE_VID=new Set(['royal','floral']);
+const FEAT={tpl:'All 20 card designs',vtpl:'All 7 video designs',pdf:'Print-ready PDF of the card',hd:'HD 720p video',song:'Your own song in the video',mark:'No VivahKala mark on downloads'};
+const ACC={cfg:null,token:'',user:null,orders:null,mode:'signup',pending:''};
+try{ACC.token=localStorage.getItem('vk-token')||'';}catch(e){}
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rupees=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+const dateStr=t=>new Date(t).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+const paidOn=()=>!!(ACC.cfg&&ACC.cfg.enforce);
+function isPro(){return!paidOn()||!!(ACC.user&&ACC.user.pro);}
+const proCard=id=>paidOn()&&!FREE_CARD.has(id), proVid=id=>paidOn()&&!FREE_VID.has(id);
+function setToken(t){ACC.token=t||'';try{t?localStorage.setItem('vk-token',t):localStorage.removeItem('vk-token');}catch(e){}}
+async function api(path,body){const h={'Content-Type':'application/json'};if(ACC.token)h.Authorization='Bearer '+ACC.token;let r;
+  try{r=await fetch('/api/'+path,{method:body?'POST':'GET',headers:h,body:body?JSON.stringify(body):undefined});}catch(e){throw new Error('Could not reach VivahKala. Check your internet and try again.');}
+  let d={};try{d=await r.json();}catch(e){}if(!r.ok){const e=new Error(d.error||'Something went wrong. Please try again.');e.status=r.status;throw e;}return d;}
+async function loadAcct(){try{ACC.cfg=await api('config');}catch(e){ACC.cfg=null;}
+  if(ACC.token&&ACC.cfg&&ACC.cfg.accounts){try{ACC.user=(await api('me')).user;}catch(e){if(e.status===401)setToken('');}}
+  renderAcct();}
+function drawMark(c,W,H){const s=Math.min(W,H),fs=Math.max(11,s*0.024),txt='Made with VivahKala';c.save();c.font=`600 ${fs}px Poppins, sans-serif`;if('letterSpacing'in c)c.letterSpacing='0px';
+  const w=c.measureText(txt).width+fs*1.6,h=fs*1.9,x=(W-w)/2,y=H-h-s*0.02;c.fillStyle='rgba(20,8,12,.55)';rr(c,x,y,w,h,h/2);c.fill();c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText(txt,W/2,y+h/2+fs*0.05);c.restore();}
+function gate(f){if(isPro())return true;openUpgrade(f);return false;}
+function planStatus(){const u=ACC.user;if(!paidOn())return{icon:'🎉',title:'Everything is free',sub:'All designs and downloads are open right now.'};
+  if(u&&u.pro)return{icon:'👑',title:u.trial?'Pro free trial':'VivahKala Pro',sub:'Until '+dateStr(u.paidUntil)};
+  return{icon:'🪔',title:'Free plan',sub:u?'Upgrade for every design and clean downloads.':'Log in or create an account to go Pro.'};}
+function renderAcct(){const st=planStatus(),free=!isPro();
+  $$('#gal .tpl').forEach(b=>b.querySelector('.probadge').hidden=!(free&&proCard(b.dataset.id)));$$('#vgal .tpl').forEach(b=>b.querySelector('.probadge').hidden=!(free&&proVid(b.dataset.id)));
+  const chip=$('#planChip');chip.className='pchip'+(paidOn()?(isPro()?' pro':' up'):'');chip.textContent=!paidOn()?'Plans':isPro()?'👑 Pro':'Go Pro';
+  $('#sidePlan').innerHTML=`<div style="font-size:22px">${st.icon}</div><b>${esc(st.title)}</b><span>${esc(st.sub)}</span>${paidOn()&&free?'<button class="btn small" type="button" data-up>Upgrade to Pro</button>':'<button class="btn ghost small" type="button" data-plan>'+(ACC.user?'My account':'Plans &amp; account')+'</button>'}`;
+  const up=$('#sidePlan [data-up]');if(up)up.onclick=()=>openUpgrade('');const pl=$('#sidePlan [data-plan]');if(pl)pl.onclick=()=>setTab('plan');
+  if(!$('#p-plan').hidden)renderPlan(false);if($('#quality'))$('#quality').value=isPro()?S.quality:'540';}
+async function renderPlan(fetchOrders){const c=ACC.cfg,u=ACC.user,box=$('#acctBox');
+  $('#planLede').textContent=paidOn()?`Free to start. Pro unlocks every design, clean downloads and HD video${c.trialDays?`, and new accounts get ${c.trialDays} day${c.trialDays>1?'s':''} of Pro free`:''}.`:'Everything in VivahKala is free right now. Accounts and Pro plans open here soon.';
+  if(!c||!c.accounts){box.innerHTML='<h2>Account</h2><p class="hint">Accounts are not open yet. You can use every feature without one, and your work is saved on this device.</p>';}
+  else if(u){const st=planStatus();box.innerHTML=`<h2>My account</h2><div class="status"><div class="crown">${st.icon}</div><div><b>${esc(st.title)}</b><span>${esc(st.sub)}</span></div></div>
+    <p class="hint">${esc(u.name||'')}${u.name?' · ':''}${esc(u.phone)}</p><div class="row"><button class="btn ghost small" type="button" id="logout">Log out</button></div>`;
+    $('#logout').onclick=async()=>{try{await api('auth',{action:'logout'});}catch(e){}setToken('');ACC.user=null;ACC.orders=null;renderAcct();renderPlan(false);toast('Logged out');};}
+  else{const su=ACC.mode==='signup';box.innerHTML=`<div class="authtabs"><button type="button" data-m="login" aria-pressed="${!su}">Log in</button><button type="button" data-m="signup" aria-pressed="${su}">Create account</button></div>
+    <form class="form" id="authF">${su?'<label class="field"><span>Your name</span><input name="name" autocomplete="name" maxlength="80"></label>':''}
+    <label class="field"><span>Mobile number</span><input name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10-digit number" required></label>
+    <label class="field"><span>Password</span><input name="password" type="password" autocomplete="${su?'new-password':'current-password'}" minlength="${su?6:1}" required></label>
+    <p class="err" role="alert"></p><button class="btn" type="submit">${su?'Create account':'Log in'}</button>${su&&paidOn()&&c.trialDays?`<p class="hint">New accounts get ${c.trialDays} day${c.trialDays>1?'s':''} of Pro free.</p>`:''}</form>`;
+    $$('[data-m]',box).forEach(b=>b.onclick=()=>{ACC.mode=b.dataset.m;renderPlan(false);});
+    const f=$('#authF');f.onsubmit=async e=>{e.preventDefault();const err=$('.err',f),btn=$('button[type=submit]',f);err.textContent='';btn.disabled=true;
+      try{const d=await api('auth',{action:ACC.mode,phone:f.phone.value,password:f.password.value,name:f.name?f.name.value:''});setToken(d.token);ACC.user=d.user;ACC.orders=null;renderAcct();renderPlan(true);
+        toast(d.user.trial?'Welcome! Pro is free until '+dateStr(d.user.paidUntil):'Welcome'+(d.user.name?', '+d.user.name:'')+'!');
+        if(ACC.pending&&!isPro()){const p=ACC.pending;ACC.pending='';openPay(p);}}
+      catch(x){err.textContent=x.message;btn.disabled=false;}};}
+  const pb=$('#priceBox');const free=['6 card designs','2 video designs','Image download with a small VivahKala mark','540p video'];
+  pb.innerHTML=`<div class="prices"><div class="pcard"><h3>Free</h3><div class="amt">₹0</div><ul class="perks">${free.map(x=>`<li>${x}</li>`).join('')}<li class="no">PDF, HD video and your own song</li></ul></div>
+    <div class="pcard pro"><h3>👑 Pro</h3>${c&&c.enabled?`<div class="amt">${rupees(c.monthly)} <small>/ month</small></div>`:''}<ul class="perks">${Object.values(FEAT).map(x=>`<li>${x}</li>`).join('')}</ul>
+    ${paidOn()?(isPro()&&u&&!u.trial?`<p class="hint">You're on Pro until ${dateStr(u.paidUntil)}. Renewing adds time on top.</p>`:'')+planButtons():'<p class="hint">Free for everyone right now.</p>'}</div></div>`;
+  $$('[data-buy]',pb).forEach(b=>b.onclick=()=>startPay(b.dataset.buy));
+  const ob=$('#ordersBox');if(!u||!paidOn()){ob.hidden=true;return;}
+  if(fetchOrders||!ACC.orders){try{ACC.orders=(await api('pay')).orders;}catch(e){ACC.orders=[];}}
+  const L=ACC.orders||[];ob.hidden=!L.length;ob.innerHTML='<h2>My payments</h2><ul class="orders">'+L.map(o=>`<li><span>${rupees(o.amount/100)} · ${o.plan==='yearly'?'1 year':'1 month'} · UTR ${esc(o.utr)}<br><small class="hint">${dateStr(o.createdAt)}</small></span>${o.state==='COMPLETED'?'<span class="tag ok">Approved</span>':o.state==='PENDING'?'<span class="tag wait">Checking</span>':'<span class="tag bad">Not found</span>'}</li>`).join('')+'</ul><p class="fine">A payment we could not find in our account shows "Not found". Check the number and submit it again.</p>';}
+function planButtons(){const c=ACC.cfg,off=c.monthly*12>c.yearly?Math.round(100-c.yearly/(c.monthly*12)*100):0;
+  return`<div class="planbtns"><button class="btn" type="button" data-buy="yearly"><span>Yearly · ${rupees(c.yearly)}</span>${off>0?`<span class="save">Save ${off}%</span>`:''}</button><button class="btn ghost" type="button" data-buy="monthly"><span>Monthly · ${rupees(c.monthly)}</span></button></div>`;}
+function closePay(){$('#payM').hidden=true;$('#payCard').innerHTML='';}
+$('#payM').addEventListener('click',e=>{if(e.target.id==='payM')closePay();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#payM').hidden)closePay();});
+function openUpgrade(f){const c=ACC.cfg,card=$('#payCard');
+  card.innerHTML=`<button type="button" class="mx" aria-label="Close">×</button><h3 id="payT">👑 VivahKala Pro</h3><p class="hint">${f?esc(FEAT[f])+' is part of Pro.':'Everything for your wedding invites.'}</p>
+    <ul class="perks" style="margin:12px 0 16px">${Object.values(FEAT).map(x=>`<li>${x}</li>`).join('')}</ul>${planButtons()}
+    ${!ACC.user&&c.trialDays?`<p class="fine">New accounts get ${c.trialDays} day${c.trialDays>1?'s':''} of Pro free. <button type="button" class="linkbtn" data-trial>Create an account</button></p>`:''}`;
+  $('.mx',card).onclick=closePay;$$('[data-buy]',card).forEach(b=>b.onclick=()=>startPay(b.dataset.buy));
+  const tr=$('[data-trial]',card);if(tr)tr.onclick=()=>{closePay();ACC.mode='signup';setTab('plan');window.scrollTo(0,0);};$('#payM').hidden=false;}
+function startPay(plan){if(!ACC.user){closePay();ACC.pending=plan;ACC.mode='signup';setTab('plan');window.scrollTo(0,0);toast('Create an account or log in first, then pay.');return;}openPay(plan);}
+function upiLink(plan,amount){const p=new URLSearchParams({pn:(ACC.cfg.payeeName||'VivahKala').slice(0,40),am:Number(amount).toFixed(2),cu:'INR',tn:`VivahKala Pro ${plan} ${ACC.user?ACC.user.phone:''}`.trim().slice(0,50)});
+  // UPI apps expect the payee address unencoded
+  return`upi://pay?pa=${ACC.cfg.upiId.trim()}&`+p.toString().replace(/\+/g,'%20');}
+async function openPay(plan){const c=ACC.cfg;if(!c||!c.upiId)return toast('Payments are not set up yet.');
+  const amount=plan==='yearly'?c.yearly:c.monthly,link=upiLink(plan,amount),mobile=/Android|iPhone|iPad/i.test(navigator.userAgent),card=$('#payCard');let qr='';
+  try{if(!window.qrcode)await loadScript('/qrcode.js');const q=window.qrcode(0,'M');q.addData(link);q.make();qr=q.createDataURL(6,2);}catch(e){}
+  card.innerHTML=`<button type="button" class="mx" aria-label="Close">×</button><h3 id="payT">Pay ${rupees(amount)}</h3><p class="hint">VivahKala Pro for ${plan==='yearly'?'1 year':'1 month'}.</p>
+    <ol class="steps"><li><b>Scan and pay exactly ${rupees(amount)}</b> with any UPI app.${qr?`<img class="qr" src="${qr}" alt="UPI QR code to pay ${esc(rupees(amount))} to ${esc(c.upiId)}">`:''}
+      <span>To <b>${esc(c.payeeName||c.upiId)}</b> · <code>${esc(c.upiId)}</code> <button type="button" class="linkbtn" data-copy>Copy UPI ID</button></span>${mobile?`<div style="margin-top:8px"><a class="btn small" href="${esc(link)}">Open UPI app</a></div>`:''}</li>
+    <li><b>Enter the 12-digit transaction number</b> from the payment receipt. PhonePe calls it <i>UTR</i>, Google Pay <i>UPI transaction ID</i>, Paytm <i>UPI Ref No</i>.
+      <form class="form" id="utrF" style="margin-top:8px"><div class="utrrow field"><input name="utr" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="12-digit number" aria-label="UPI transaction number" required>${navigator.clipboard&&navigator.clipboard.readText?'<button type="button" class="btn ghost small" data-paste>Paste</button>':''}</div>
+      <p class="err" role="alert"></p><button class="btn" type="submit">Submit payment</button></form></li></ol>
+    <p class="fine">We check every payment by hand. Pro turns on as soon as it is confirmed, usually within a few hours.</p>`;
+  $('.mx',card).onclick=closePay;$('[data-copy]',card).onclick=async()=>{try{await navigator.clipboard.writeText(c.upiId);toast('UPI ID copied');}catch(e){toast(c.upiId);}};
+  const f=$('#utrF'),ps=$('[data-paste]',card);
+  if(ps)ps.onclick=async()=>{try{const t=await navigator.clipboard.readText(),m=String(t).replace(/(\d)[ -](?=\d)/g,'$1').match(/(?<!\d)\d{12}(?!\d)/);if(m){f.utr.value=m[0];toast('UTR pasted. Check it matches your payment app.');}else toast('No 12-digit number found in what you copied.');}catch(e){toast('Allow pasting, or type the 12-digit number.');}};
+  f.onsubmit=async e=>{e.preventDefault();const err=$('.err',f),btn=$('button[type=submit]',f),utr=f.utr.value.replace(/\s/g,'');err.textContent='';
+    if(!/^\d{12}$/.test(utr)){err.textContent='The transaction number has exactly 12 digits.';return;}btn.disabled=true;
+    try{await api('pay',{plan,utr});ACC.orders=null;card.innerHTML=`<button type="button" class="mx" aria-label="Close">×</button><h3 id="payT">Payment submitted</h3><p class="hint">Thank you. We will match transaction <b>${esc(utr)}</b> for ${rupees(amount)} with our account and turn on Pro, usually within a few hours. You can keep designing meanwhile.</p><div class="mact"><button class="btn" type="button" data-ok>OK</button></div>`;
+      $('.mx',card).onclick=closePay;$('[data-ok]',card).onclick=closePay;if(!$('#p-plan').hidden)renderPlan(true);}
+    catch(x){err.textContent=x.message;btn.disabled=false;}};
+  $('#payM').hidden=false;}
+// Pro can switch on while the app is open (the owner approves a payment): check again when the tab comes back.
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState!=='visible'||!ACC.token||!ACC.cfg||!ACC.cfg.accounts)return;const was=isPro();try{ACC.user=(await api('me')).user;}catch(e){return;}renderAcct();if(!was&&isPro())toast('Pro is on. Enjoy every design!');});
+
 /* ---------- tabs & init ---------- */
-function setTab(n){$$('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===n?'true':'false'));for(const p of['details','card','video'])$('#p-'+p).hidden=p!==n;if(n!=='video')pause();if(n==='card')renderCard();if(n==='video'&&!recording)vDraw(Pl.t);}
-$$('[data-tab]').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
-async function boot(){buildCardUI();buildVideoUI();bindDetails();syncCard();syncVid();if(S.photo){try{PHOTO=await loadImg(S.photo);}catch(e){S.photo=null;}}for(const k of['groom','bride']){if(S.faces[k])await setFace(k,S.faces[k]).catch(()=>{});drawFaceCard(k);}
+function setTab(n){$$('[data-tab]').forEach(b=>{if(b.dataset.tab===n)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');b.removeAttribute('aria-selected');});for(const p of['details','card','video','plan'])$('#p-'+p).hidden=p!==n;document.body.dataset.tab=n;if(n==='plan')renderPlan(true);if(n!=='video')pause();if(n==='card')renderCard();if(n==='video'&&!recording)vDraw(Pl.t);}
+$$('[data-tab]').forEach(b=>b.onclick=()=>{setTab(b.dataset.tab);window.scrollTo(0,0);});
+$$('[data-proxy]').forEach(b=>b.onclick=()=>$('#'+b.dataset.proxy).click());
+async function boot(){loadAcct();buildCardUI();buildVideoUI();bindDetails();syncCard();syncVid();if(S.photo){try{PHOTO=await loadImg(S.photo);}catch(e){S.photo=null;}}for(const k of['groom','bride']){if(S.faces[k])await setFace(k,S.faces[k]).catch(()=>{});drawFaceCard(k);}
   refreshV();setTab('card');const F=['400 40px "Great Vibes"','700 40px Cinzel','500 40px "Cormorant Garamond"','italic 500 40px "Cormorant Garamond"','700 40px "Cormorant Garamond"','700 40px "Playfair Display"','italic 600 40px "Playfair Display"','40px Marcellus','400 40px "Josefin Sans"','600 40px "Josefin Sans"','700 40px "Dancing Script"','700 40px Fredoka','500 40px Fredoka','600 40px Poppins'];
   if(document.fonts){await Promise.allSettled([...F.map(f=>document.fonts.load(f,'Aa')),document.fonts.load('40px "Yatra One"','शुभ Aa'),document.fonts.load('40px "Tiro Devanagari Hindi"','शुभ')]);renderCard();refreshV();}}
 boot();
