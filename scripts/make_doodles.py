@@ -1,4 +1,4 @@
-"""Generate website/doodles.svg: a seamless chat-wallpaper style tile of wedding doodles.
+"""Generate website/public/doodles.svg: a seamless chat-wallpaper style tile of wedding doodles.
 
 Every icon is drawn as line art on a 48x48 grid. They are placed on a 6x6 grid with
 some jitter, rotation and scale, and small filler shapes go in the gaps. The fixed
@@ -14,7 +14,7 @@ TILE = 720
 CELLS = 6
 LINE = 2.1  # rendered stroke width in px, the same for every doodle
 STROKE = "#1f2c33"
-OUT = Path(__file__).resolve().parent.parent / "website" / "doodles.svg"
+OUT = Path(__file__).resolve().parent.parent / "website" / "public" / "doodles.svg"
 
 
 def arc_points(n, fn):
