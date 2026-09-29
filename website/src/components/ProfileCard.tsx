@@ -24,6 +24,7 @@ export function ProfileCard({ bio, saved, status }: { bio: Biodata; saved: boole
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {photo ? <img src={photo} alt="" loading="lazy" /> : <Silhouette />}
           {status !== "none" ? <span className={`${STATUS[status].cls} status`}>{STATUS[status].text}</span> : null}
+          {bio.sample ? <span className="pill sample sample-tag">Sample profile</span> : null}
         </div>
         <div className="body">
           <span className="nm">{bio.fullName ?? "Unnamed"}</span>

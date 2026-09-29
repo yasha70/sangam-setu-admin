@@ -40,7 +40,11 @@ Without Redis variables, local development uses an in-memory store saved to `web
 
 ### Design
 
-A dark chat-wallpaper look: charcoal `#0B141A` covered in faint line doodles of wedding things, maroon `#46001C` → `#AC0045` bubbles and buttons, and the gold lotus `#E0AD38`. Inter for text, Rozha One for headings. To change the wallpaper, edit `scripts/make_doodles.py` and run `python3 scripts/make_doodles.py`.
+A festive wedding look: warm ivory `#FFF5E8` covered in colourful line doodles of wedding things, a maroon-to-rani-pink header (`#9E0038` → `#E0306F`) with a marigold toran below it, marigold `#F28C0F` buttons, and mehendi green and peacock blue as supporting colours. Inter for text, Rozha One for headings. To change the wallpaper, edit `scripts/make_doodles.py` and run `python3 scripts/make_doodles.py`.
+
+### Sample profiles
+
+24 sample profiles (12 brides, 12 grooms) are added the first time someone opens Browse, from `src/lib/samples.ts`. They use illustrated portraits from `public/samples` (made by `scripts/make_sample_avatars.py`), show a "Sample profile" tag, can't receive interests, and have no login. Real profiles always appear before them. To remove them, set `SANGAM_SAMPLE_PROFILES=off` in Vercel and redeploy.
 
 ### Before launch
 

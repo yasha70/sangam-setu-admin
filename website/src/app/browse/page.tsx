@@ -5,6 +5,7 @@ import { EmptyState, ProfileCard, type CardStatus } from "@/components/ProfileCa
 import { Icon } from "@/components/Icon";
 import { requireUser } from "@/lib/auth";
 import { ageFrom } from "@/lib/bio";
+import { ensureSamples } from "@/lib/samples";
 import { getBiodata, getBiodatas, hiddenFor, interestsFor, listPublishedIds, savedIds } from "@/lib/data";
 import type { Biodata } from "@/lib/types";
 
@@ -15,6 +16,7 @@ const has = (hay: string | undefined, needle: string) => (hay ?? "").toLowerCase
 export default async function BrowsePage({ searchParams }: { searchParams: Promise<Filters> }) {
   const user = await requireUser("/browse");
   const f = await searchParams;
+  await ensureSamples();
   const [ids, hidden, saved, mine] = await Promise.all([listPublishedIds(), hiddenFor(user.id), savedIds(user.id), getBiodata(user.id)]);
   const bios = (await getBiodatas(ids.filter((i) => i !== user.id && !hidden.has(i)))).filter(
     (b): b is Biodata => Boolean(b?.published),

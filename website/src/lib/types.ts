@@ -75,6 +75,8 @@ export type Biodata = { [K in BiodataTextField]?: string } & {
   photos: string[];
   published: boolean;
   updatedAt: number;
+  /** A built-in sample profile (see lib/samples.ts): shown with a tag and can't receive interests. */
+  sample?: boolean;
 };
 
 /** Fields that only the owner and accepted connections can see. */

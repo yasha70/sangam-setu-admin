@@ -35,7 +35,7 @@ export function useInterestAction() {
   return { act, busy };
 }
 
-export function ProfileActions({ id, name, kind, saved }: { id: string; name: string; kind: Kind; saved: boolean }) {
+export function ProfileActions({ id, name, kind, saved, sample = false }: { id: string; name: string; kind: Kind; saved: boolean; sample?: boolean }) {
   const router = useRouter();
   const { act, busy } = useInterestAction();
   const [confirmBlock, setConfirmBlock] = useState(false);
@@ -50,6 +50,15 @@ export function ProfileActions({ id, name, kind, saved }: { id: string; name: st
       toast((e as Error).message, true);
     }
   };
+
+  if (sample) {
+    return (
+      <div className="actions">
+        <span className="pill sample" style={{ height: 44, padding: "0 16px" }}>Sample profile</span>
+        <SaveButton id={id} initial={saved} variant="button" />
+      </div>
+    );
+  }
 
   if (kind === "blocked") {
     return (

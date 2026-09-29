@@ -35,12 +35,17 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   const shown = biodataForViewer(bio, relation);
   return (
-    <main className="wrap page">
+    <main className="wrap page stack">
+      {bio.sample ? (
+        <p className="notice sample">
+          This is a sample profile with an illustrated portrait. It shows how biodatas look on Sangam Setu, and it can&apos;t receive interests.
+        </p>
+      ) : null}
       <BiodataView
         bio={shown}
         isSelf={false}
         canSeeContact={relation.kind === "connected"}
-        actions={<ProfileActions id={id} name={bio.fullName ?? ""} kind={relation.kind} saved={saved.includes(id)} />}
+        actions={<ProfileActions id={id} name={bio.fullName ?? ""} kind={relation.kind} saved={saved.includes(id)} sample={Boolean(bio.sample)} />}
       />
     </main>
   );

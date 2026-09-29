@@ -13,7 +13,10 @@ from pathlib import Path
 TILE = 720
 CELLS = 6
 LINE = 2.1  # rendered stroke width in px, the same for every doodle
-STROKE = "#1f2c33"
+STROKE = "currentColor"
+# festive wedding colours: rani pink, marigold, maroon, mehendi green, gold, peacock, purple
+PALETTE = ["#e0306f", "#f28c0f", "#b3003c", "#3f7d3a", "#d4960f", "#0e7c86", "#8a1c7c"]
+OPACITY = 0.2
 OUT = Path(__file__).resolve().parent.parent / "website" / "public" / "doodles.svg"
 
 
@@ -107,7 +110,8 @@ def main():
     cell = TILE / CELLS
     parts = []
 
-    def place(markup, x, y, rot, scale, size=48):
+    def place(markup, x, y, rot, scale, size=48, color=None):
+        color = color or rnd.choice(PALETTE)
         for dx in (-TILE, 0, TILE):
             for dy in (-TILE, 0, TILE):
                 cx, cy = x + dx, y + dy
@@ -115,7 +119,7 @@ def main():
                 if -reach < cx < TILE + reach and -reach < cy < TILE + reach:
                     parts.append(
                         f'<g transform="translate({cx:.1f} {cy:.1f}) rotate({rot:.1f}) scale({scale:.2f}) '
-                        f'translate({-size / 2} {-size / 2})" stroke-width="{LINE / scale:.2f}">{markup}</g>'
+                        f'translate({-size / 2} {-size / 2})" stroke-width="{LINE / scale:.2f}" color="{color}">{markup}</g>'
                     )
 
     k = 0
@@ -136,7 +140,7 @@ def main():
 
     svg = (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{TILE}" height="{TILE}" viewBox="0 0 {TILE} {TILE}">'
-        f'<g fill="none" stroke="{STROKE}" stroke-linecap="round" stroke-linejoin="round">'
+        f'<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" opacity="{OPACITY}">'
         + "".join(parts)
         + "</g></svg>\n"
     )
