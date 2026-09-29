@@ -225,15 +225,43 @@ class MemoryKV implements KV {
   }
 }
 
+/**
+ * Every key is stored under "ss:", so Sangam Setu can share a Redis database with
+ * other apps (such as PakkaBill) without their keys ever colliding.
+ */
+const PREFIX = "ss:";
+
+function prefixed(inner: KV): KV {
+  const k = (key: string) => PREFIX + key;
+  return {
+    get: (key) => inner.get(k(key)),
+    set: (key, value, opts) => inner.set(k(key), value, opts),
+    del: (...keys) => inner.del(...keys.map(k)),
+    mget: (keys) => inner.mget(keys.map(k)),
+    incr: (key, ttl) => inner.incr(k(key), ttl),
+    sadd: (key, m) => inner.sadd(k(key), m),
+    srem: (key, m) => inner.srem(k(key), m),
+    smembers: (key) => inner.smembers(k(key)),
+    sismember: (key, m) => inner.sismember(k(key), m),
+    zadd: (key, score, m) => inner.zadd(k(key), score, m),
+    zrem: (key, m) => inner.zrem(k(key), m),
+    zscore: (key, m) => inner.zscore(k(key), m),
+    zrevrange: (key, a, b) => inner.zrevrange(k(key), a, b),
+    zafter: (key, after, limit) => inner.zafter(k(key), after, limit),
+    zlast: (key, n) => inner.zlast(k(key), n),
+    zcard: (key) => inner.zcard(k(key)),
+  };
+}
+
 const g = globalThis as unknown as { __sangamKV?: KV };
 
 export function kv(): KV {
   if (g.__sangamKV) return g.__sangamKV;
   const env = redisEnv();
   if (env) {
-    g.__sangamKV = new UpstashKV(env.url, env.token);
+    g.__sangamKV = prefixed(new UpstashKV(env.url, env.token));
   } else if (process.env.NODE_ENV !== "production" || process.env.SANGAM_MEMORY_DB === "1") {
-    g.__sangamKV = new MemoryKV();
+    g.__sangamKV = prefixed(new MemoryKV());
   } else {
     throw new DatabaseNotConfiguredError();
   }

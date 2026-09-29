@@ -58,9 +58,9 @@ function SetupNotice() {
         <p className="eyebrow">Almost ready</p>
         <h1>Connect the database</h1>
         <p className="muted">
-          Sangam Setu stores accounts, biodatas and chats in Upstash Redis. In the Vercel dashboard, open this
-          project, go to <b>Storage</b>, choose <b>Create Database</b> then <b>Upstash for Redis</b>, and connect it to
-          this project. Then redeploy.
+          Sangam Setu keeps accounts, biodatas and chats in Upstash Redis. In the Vercel dashboard, open{" "}
+          <b>Storage</b>, choose your existing <b>Upstash Redis</b> database (or create one), click{" "}
+          <b>Connect Project</b> and pick <b>sangam-setu</b>. Then redeploy.
         </p>
       </div>
     </main>

@@ -368,3 +368,9 @@ dialog.sheet h2 { font-size: 28px; margin-bottom: 4px; }
 .closing blockquote em { font-style: normal; color: var(--gold); }
 .site-footer { border-top: 1px solid var(--line); background: #0a1014; padding-block: 28px; color: var(--faint); font-size: 13.5px; }
 .site-footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; justify-content: space-between; align-items: center; }
+.logo b { white-space: nowrap; }
+@media (max-width: 420px) {
+  .app-header .wrap { gap: 10px; }
+  .header-actions .btn-quiet { padding: 0 8px; }
+  .header-actions .btn-sm { padding: 0 10px; }
+}
