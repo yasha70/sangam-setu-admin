@@ -1,5 +1,5 @@
 import { Gallery } from "./Gallery";
-import { Icon } from "./Icon";
+import { Icon, VerifiedTick } from "./Icon";
 import { ageFrom } from "@/lib/bio";
 import type { Biodata, BiodataTextField } from "@/lib/types";
 
@@ -35,11 +35,13 @@ export function BiodataView({
   canSeeContact,
   isSelf,
   actions,
+  activity,
 }: {
   bio: Biodata;
   canSeeContact: boolean;
   isSelf: boolean;
   actions?: React.ReactNode;
+  activity?: string;
 }) {
   const v = (k: BiodataTextField) => bio[k]?.trim() || undefined;
   const age = ageFrom(v("dob"));
@@ -52,8 +54,19 @@ export function BiodataView({
 
       <div className="stack">
         <div>
-          <h1 className="profile-name">{v("fullName") ?? "Unnamed"}</h1>
+          <h1 className="profile-name row" style={{ gap: 12 }}>
+            {v("fullName") ?? "Unnamed"}
+            {bio.verified ? <VerifiedTick /> : null}
+          </h1>
           <div className="facts">
+            {bio.profileNo ? <span className="pill peacock">ID SS{bio.profileNo}</span> : null}
+            {activity ? (
+              <span className="pill ok">
+                {activity === "Online" ? <span className="online-dot" /> : null}
+                {activity}
+              </span>
+            ) : null}
+            {bio.verified ? <span className="pill peacock">Verified</span> : null}
             {age !== null ? <span className="pill">{age} years</span> : null}
             {shortHeight(v("height")) ? <span className="pill">{shortHeight(v("height"))}</span> : null}
             {place ? <span className="pill"><Icon name="pin" />{place}</span> : null}

@@ -8,6 +8,10 @@ export type User = {
   createdFor: string;
   passHash: string;
   createdAt: number;
+  /** Human-friendly number shown as SS1001, SS1002, ... */
+  profileNo?: number;
+  lastActive?: number;
+  status?: "active" | "suspended";
 };
 
 export type PublicUser = Pick<User, "id" | "name" | "gender" | "createdFor">;
@@ -77,6 +81,23 @@ export type Biodata = { [K in BiodataTextField]?: string } & {
   updatedAt: number;
   /** A built-in sample profile (see lib/samples.ts): shown with a tag and can't receive interests. */
   sample?: boolean;
+  /** Set by an admin after checking the profile. Shows a green "Verified" tick. */
+  verified?: boolean;
+  /** Set by an admin: the biodata can't be published until an admin unhides it. */
+  adminHidden?: boolean;
+  profileNo?: number;
+};
+
+export type ReportReason = "Fake profile" | "Wrong information" | "Inappropriate photo" | "Abusive messages" | "Asking for money" | "Already married" | "Other";
+
+export type Report = {
+  id: string;
+  from: string;
+  target: string;
+  reason: ReportReason;
+  note: string;
+  ts: number;
+  status: "open" | "dismissed" | "actioned";
 };
 
 /** Fields that only the owner and accepted connections can see. */

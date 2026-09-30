@@ -14,6 +14,7 @@ export type Filters = {
   religion?: string;
   marital?: string;
   photo?: string;
+  verified?: string;
 };
 
 export function BrowseFilters({ f, count }: { f: Filters; count: number }) {
@@ -31,7 +32,7 @@ export function BrowseFilters({ f, count }: { f: Filters; count: number }) {
         <form className="form" method="get" action="/browse">
           <label className="field">
             <span>Search</span>
-            <input name="q" defaultValue={f.q} placeholder="Name, city or occupation" />
+            <input name="q" defaultValue={f.q} placeholder="Name, city, job or ID (SS1001)" />
           </label>
           <div className="grid2" style={{ gridTemplateColumns: "1fr 1fr" }}>
             <label className="field">
@@ -77,6 +78,10 @@ export function BrowseFilters({ f, count }: { f: Filters; count: number }) {
           <label className="check">
             <input type="checkbox" name="photo" value="1" defaultChecked={f.photo === "1"} />
             <span>Only profiles with a photo</span>
+          </label>
+          <label className="check">
+            <input type="checkbox" name="verified" value="1" defaultChecked={f.verified === "1"} />
+            <span>Only verified profiles</span>
           </label>
           <div className="row">
             <button className="btn btn-gold btn-sm" style={{ flex: 1 }}>Apply</button>

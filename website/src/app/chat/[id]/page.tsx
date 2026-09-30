@@ -4,7 +4,7 @@ import { ChatList } from "@/components/ChatList";
 import { Conversation } from "@/components/Conversation";
 import { requireUser } from "@/lib/auth";
 import { ageFrom } from "@/lib/bio";
-import { canChat, chatListFor, getBiodata, getMessages, markRead, readMarker } from "@/lib/data";
+import { activityLabel, canChat, chatListFor, getBiodata, getMessages, getUser, markRead, readMarker } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Chat" };
 
@@ -24,11 +24,11 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
     );
   }
 
-  const [bio, messages, theirRead] = await Promise.all([getBiodata(id), getMessages(user.id, id, 0), readMarker(id, user.id)]);
+  const [bio, messages, theirRead, other] = await Promise.all([getBiodata(id), getMessages(user.id, id, 0), readMarker(id, user.id), getUser(id)]);
   if (messages.length) await markRead(user.id, id, messages[messages.length - 1].ts);
   const chats = await chatListFor(user.id);
   const age = ageFrom(bio?.dob);
-  const line = [age !== null ? `${age} yrs` : null, bio?.city, bio?.occupation].filter(Boolean).join(" · ");
+  const line = [activityLabel(other?.lastActive), age !== null ? `${age} yrs` : null, bio?.city].filter(Boolean).join(" · ");
 
   return (
     <main className="chat-shell has-convo">

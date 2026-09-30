@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Icon, Silhouette } from "./Icon";
+import { Icon, Silhouette, VerifiedTick } from "./Icon";
 import { SaveButton } from "./SaveButton";
 import { ageFrom } from "@/lib/bio";
 import type { Biodata } from "@/lib/types";
@@ -27,7 +27,7 @@ export function ProfileCard({ bio, saved, status }: { bio: Biodata; saved: boole
           {bio.sample ? <span className="pill sample sample-tag">Sample profile</span> : null}
         </div>
         <div className="body">
-          <span className="nm">{bio.fullName ?? "Unnamed"}</span>
+          <span className="nm">{bio.fullName ?? "Unnamed"}{bio.verified ? <VerifiedTick /> : null}</span>
           <span className="meta">{[age !== null ? `${age} yrs` : null, height, bio.city].filter(Boolean).join(" · ")}</span>
           <span className="meta2">{[bio.occupation, bio.community || bio.caste].filter(Boolean).join(" · ")}</span>
         </div>

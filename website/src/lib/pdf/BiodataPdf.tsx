@@ -314,7 +314,7 @@ export function BiodataPdf({ bio, opts }: { bio: Biodata; opts: PdfOptions }) {
         ) : null}
 
         <View style={s.footer} fixed>
-          <Text style={s.footerText}>Made on Sangam Setu  ·  {opts.siteUrl}</Text>
+          <Text style={s.footerText}>{bio.profileNo ? `Profile ID SS${bio.profileNo}  ·  ` : ""}Made on Sangam Setu  ·  {opts.siteUrl}</Text>
         </View>
       </Page>
     </Document>

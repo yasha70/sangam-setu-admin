@@ -7,6 +7,10 @@ export const PUT = withUser(async (uid, req) => {
   if (!current) return fail("Biodata not found.", 404);
   const fields = cleanBiodataInput((body.fields as Record<string, unknown>) ?? {});
   const wantPublished = typeof body.published === "boolean" ? body.published : current.published;
+  if (wantPublished && current.adminHidden) {
+    await saveBiodata(uid, { ...fields, published: false });
+    return fail("Saved. Our team has hidden your biodata for review, so it can't be published right now.", 403);
+  }
   const merged = { ...current, ...fields, published: wantPublished };
   const missing = publishProblems(merged);
   if (wantPublished && missing.length) {

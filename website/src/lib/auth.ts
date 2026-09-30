@@ -5,7 +5,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { createHash, randomBytes, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { sessionSecretMaterial } from "./kv";
-import { getUser } from "./data";
+import { getUser, touchUser } from "./data";
 import type { User } from "./types";
 
 const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number) => Promise<Buffer>;
@@ -60,9 +60,12 @@ export async function currentUserId(): Promise<string | null> {
   }
 }
 
+/** The signed-in member, or null. Suspended accounts count as signed out. */
 export async function currentUser(): Promise<User | null> {
   const id = await currentUserId();
-  return id ? await getUser(id) : null;
+  const user = id ? await getUser(id) : null;
+  if (!user || user.status === "suspended") return null;
+  return await touchUser(user);
 }
 
 /** For pages: send signed-out visitors to the login page. */

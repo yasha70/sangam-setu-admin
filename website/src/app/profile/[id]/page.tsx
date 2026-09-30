@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { BiodataView } from "@/components/BiodataView";
 import { ProfileActions } from "@/components/ProfileActions";
 import { requireUser } from "@/lib/auth";
-import { biodataForViewer, blockedByThem, getBiodata, relationBetween, savedIds } from "@/lib/data";
+import { activityLabel, biodataForViewer, blockedByThem, getBiodata, getUser, recordView, relationBetween, savedIds } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Profile" };
 
@@ -34,6 +34,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   }
 
   const shown = biodataForViewer(bio, relation);
+  const owner = bio.sample ? null : await getUser(id);
+  if (!bio.sample) await recordView(user.id, id);
   return (
     <main className="wrap page stack">
       {bio.sample ? (
@@ -45,6 +47,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         bio={shown}
         isSelf={false}
         canSeeContact={relation.kind === "connected"}
+        activity={owner ? activityLabel(owner.lastActive) : undefined}
         actions={<ProfileActions id={id} name={bio.fullName ?? ""} kind={relation.kind} saved={saved.includes(id)} sample={Boolean(bio.sample)} />}
       />
     </main>

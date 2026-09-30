@@ -2,9 +2,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import { currentUserId } from "@/lib/auth";
+import { ageFrom } from "@/lib/bio";
+import { sampleBiodatas } from "@/lib/samples";
 
 export default async function Home() {
   if (await currentUserId()) redirect("/browse");
+  const all = sampleBiodatas();
+  const strip = [0, 1, 2, 3, 4, 5].map((i) => all[i % 2 === 0 ? i / 2 : 12 + (i - 1) / 2]);
 
   return (
     <main>
@@ -60,6 +64,28 @@ export default async function Home() {
                 <span className="time">10:42 <Icon name="dtick" className="ico read" /></span>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section" style={{ paddingTop: 0 }}>
+        <div className="wrap">
+          <div className="section-head">
+            <span className="chip-date">A glimpse inside</span>
+            <h2>Biodatas the way <em>families read them</em></h2>
+            <p>Sample profiles, drawn to show how biodatas look. Create yours to see real families near you.</p>
+          </div>
+          <div className="strip">
+            {strip.map((b) => (
+              <Link key={b.userId} href="/signup">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={b.photos[0]} alt={`Sample profile of ${b.fullName}`} />
+                <span>
+                  <b>{b.fullName?.split(" ")[0]}, {ageFrom(b.dob)}</b>
+                  {b.occupation} · {b.city}
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>

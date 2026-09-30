@@ -34,8 +34,9 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     if (f.religion && b.religion !== f.religion) return false;
     if (f.marital && b.maritalStatus !== f.marital) return false;
     if (f.photo === "1" && !b.photos.length) return false;
+    if (f.verified === "1" && !b.verified) return false;
     if (community && !has(b.community, community) && !has(b.caste, community) && !has(b.subCaste, community)) return false;
-    if (q && ![b.fullName, b.city, b.state, b.occupation, b.employer, b.education].some((x) => has(x, q))) return false;
+    if (q && ![b.fullName, b.city, b.state, b.occupation, b.employer, b.education, b.profileNo ? `ss${b.profileNo}` : ""].some((x) => has(x, q))) return false;
     return true;
   });
 

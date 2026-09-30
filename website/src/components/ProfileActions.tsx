@@ -39,6 +39,20 @@ export function ProfileActions({ id, name, kind, saved, sample = false }: { id: 
   const router = useRouter();
   const { act, busy } = useInterestAction();
   const [confirmBlock, setConfirmBlock] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  const [reason, setReason] = useState("Fake profile");
+  const [note, setNote] = useState("");
+
+  const report = async () => {
+    try {
+      const res = await send<{ message: string }>("/api/report", "POST", { id, reason, note });
+      toast(res.message);
+      setReporting(false);
+      setNote("");
+    } catch (e) {
+      toast((e as Error).message, true);
+    }
+  };
   const first = name.split(" ")[0] || "them";
 
   const block = async (blocked: boolean) => {
@@ -115,12 +129,40 @@ export function ProfileActions({ id, name, kind, saved, sample = false }: { id: 
             <button className="btn btn-quiet btn-sm" onClick={() => setConfirmBlock(false)}>Cancel</button>
           </>
         ) : (
-          <button className="btn btn-quiet btn-sm" onClick={() => setConfirmBlock(true)}>
-            <Icon name="ban" />
-            Block
-          </button>
+          <>
+            <button className="btn btn-quiet btn-sm" onClick={() => setConfirmBlock(true)}>
+              <Icon name="ban" />
+              Block
+            </button>
+            <button className="btn btn-quiet btn-sm" onClick={() => setReporting(!reporting)} aria-expanded={reporting}>
+              <Icon name="info" />
+              Report
+            </button>
+          </>
         )}
       </div>
+      {reporting ? (
+        <div className="report-form">
+          <b>Report {first}&apos;s profile</b>
+          <label className="field">
+            <span>What&apos;s wrong?</span>
+            <select value={reason} onChange={(e) => setReason(e.target.value)}>
+              {["Fake profile", "Wrong information", "Inappropriate photo", "Abusive messages", "Asking for money", "Already married", "Other"].map((r) => (
+                <option key={r}>{r}</option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            <span>Details (optional)</span>
+            <textarea value={note} maxLength={500} onChange={(e) => setNote(e.target.value)} placeholder="Anything that helps our team check this profile" />
+          </label>
+          <div className="row">
+            <button className="btn btn-brand btn-sm" onClick={report}>Send report</button>
+            <button className="btn btn-quiet btn-sm" onClick={() => setReporting(false)}>Cancel</button>
+          </div>
+          <small className="muted">{first} won&apos;t know who reported them.</small>
+        </div>
+      ) : null}
     </div>
   );
 }

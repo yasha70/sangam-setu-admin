@@ -18,6 +18,9 @@ export async function POST(req: Request) {
     if (!user || !(await verifyPassword(password, user.passHash))) {
       return fail("That mobile number and password don't match.", 401);
     }
+    if (user.status === "suspended") {
+      return fail("This account has been suspended. Contact Sangam Setu support if you think this is a mistake.", 403);
+    }
     await kv().del(`rl:login:${phone}`);
     await startSession(user.id);
     return ok({ ok: true });

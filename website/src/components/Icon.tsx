@@ -79,3 +79,11 @@ export function Lotus({ className }: { className?: string }) {
     </svg>
   );
 }
+
+export function VerifiedTick() {
+  return (
+    <span className="verified" title="Verified by Sangam Setu" aria-label="Verified">
+      <svg className="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
+    </span>
+  );
+}

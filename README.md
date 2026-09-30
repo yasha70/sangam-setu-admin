@@ -14,7 +14,29 @@ Sangam Setu is a matrimony web app for families. People sign up, create a detail
 | Profiles, interests (send, accept, decline, withdraw), block | `src/app/profile/[id]`, `src/app/interests`, `src/app/api/interests` |
 | Real-time chat with read ticks | `src/app/chat`, `src/components/Conversation.tsx`, `src/app/api/chat` |
 | PDF biodata in three designs | `src/lib/pdf/BiodataPdf.tsx`, `src/app/api/pdf` |
+| Report a profile, account page (change password, delete account) | `src/components/ProfileActions.tsx`, `src/app/account`, `src/app/api/report`, `src/app/api/account` |
+| Admin panel | `src/app/admin`, `src/app/api/admin`, `src/lib/admin.ts` |
 | Data access | `src/lib/data.ts` (all Redis keys are listed at the top), `src/lib/kv.ts` |
+
+### Member features
+
+- Every member gets a profile ID (SS1001, SS1002, …). It shows on the profile, on the PDF, and can be typed into Browse search.
+- Profiles show when the person was last active ("Online", "Active today", …).
+- "Who viewed your profile" on My biodata lists recent visitors and the total count.
+- Any profile can be reported (fake profile, wrong information, rude messages, …). Reports go to the admin queue.
+- Verified profiles carry a green tick, and Browse can filter to verified only.
+- The Account page changes the password or deletes the account and all its data.
+
+### Admin panel
+
+Open `/admin` and log in with the `ADMIN_PASSWORD` environment variable. Without that variable the admin panel stays switched off. The admin session lasts 12 hours.
+
+- **Dashboard**: members, brides, grooms, published, verified, active this week, interests, connections, messages, open reports, and charts of new members and messages for the last 14 days.
+- **Members**: search every member by name, mobile, city or ID. On a member page: verify or remove the tick, hide the biodata from Browse, suspend (logs them out and blocks log-in), restore, or delete the account.
+- **Reports**: open reports with the reason and note. Dismiss one, or suspend the reported member.
+- **Settings**: an announcement strip shown to every member at the top of the site, and a switch to remove or restore the sample profiles.
+
+To change the admin password, edit `ADMIN_PASSWORD` in Vercel → Project → Settings → Environment Variables and redeploy.
 
 ### Privacy rules the code enforces
 
@@ -44,10 +66,9 @@ A festive wedding look: warm ivory `#FFF5E8` covered in colourful line doodles o
 
 ### Sample profiles
 
-24 sample profiles (12 brides, 12 grooms) are added the first time someone opens Browse, from `src/lib/samples.ts`. They use illustrated portraits from `public/samples` (made by `scripts/make_sample_avatars.py`), show a "Sample profile" tag, can't receive interests, and have no login. Real profiles always appear before them. To remove them, set `SANGAM_SAMPLE_PROFILES=off` in Vercel and redeploy.
+24 sample profiles (12 brides, 12 grooms) are added the first time someone opens Browse, from `src/lib/samples.ts`. They use illustrated portraits from `public/samples` (made by `scripts/make_sample_avatars.py`), show a "Sample profile" tag, can't receive interests, and have no login. Real profiles always appear before them. To remove them, use Admin → Settings, or set `SANGAM_SAMPLE_PROFILES=off` in Vercel and redeploy.
 
 ### Before launch
 
 - Add Terms and Privacy Policy pages.
 - Mobile numbers aren't verified yet. Add an SMS OTP provider (for example MSG91) to verify numbers at sign-up.
-- Add an admin view to review reported or blocked profiles.

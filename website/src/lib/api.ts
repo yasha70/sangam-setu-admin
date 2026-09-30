@@ -1,6 +1,6 @@
 import "server-only";
 import { NextResponse } from "next/server";
-import { currentUserId } from "./auth";
+import { currentUser } from "./auth";
 import { DatabaseNotConfiguredError } from "./kv";
 
 export const ok = (data: unknown = { ok: true }) => NextResponse.json(data);
@@ -12,9 +12,9 @@ export function withUser<A extends unknown[]>(
 ) {
   return async (req: Request, ...rest: A) => {
     try {
-      const uid = await currentUserId();
-      if (!uid) return fail("Please log in again.", 401);
-      return await handler(uid, req, ...rest);
+      const user = await currentUser();
+      if (!user) return fail("Please log in again.", 401);
+      return await handler(user.id, req, ...rest);
     } catch (e) {
       return errorResponse(e);
     }

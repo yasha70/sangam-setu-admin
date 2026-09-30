@@ -37,6 +37,14 @@ export function AppNav({ loggedIn }: { loggedIn: boolean }) {
     };
   }, [loggedIn, pathname]);
 
+  if (pathname.startsWith("/admin")) {
+    return (
+      <div className="header-actions" style={{ marginLeft: "auto" }}>
+        <Link className="btn btn-quiet btn-sm" href="/">Back to site</Link>
+      </div>
+    );
+  }
+
   if (!loggedIn) {
     return (
       <div className="header-actions" style={{ marginLeft: "auto" }}>
@@ -65,6 +73,9 @@ export function AppNav({ loggedIn }: { loggedIn: boolean }) {
         ))}
       </nav>
       <div className="header-actions">
+        <Link className="icon-btn" href="/account" aria-label="Account settings" title="Account settings">
+          <Icon name="user" />
+        </Link>
         <button className="icon-btn" onClick={logout} aria-label="Log out" title="Log out">
           <Icon name="logout" />
         </button>

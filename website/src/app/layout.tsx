@@ -12,6 +12,7 @@ import { Toaster } from "@/components/Toaster";
 import { Lotus } from "@/components/Icon";
 import { currentUser } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/kv";
+import { getAnnouncement } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: { default: "Sangam Setu", template: "%s · Sangam Setu" },
@@ -31,6 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   await cookies(); // every page depends on who is logged in
   const dbReady = isDatabaseConfigured();
   const user = dbReady ? await currentUser().catch(() => null) : null;
+  const announcement = dbReady ? await getAnnouncement().catch(() => "") : "";
 
   return (
     <html lang="en">
@@ -44,6 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <AppNav loggedIn={Boolean(user)} />
           </div>
         </header>
+        {announcement ? <div className="announce" role="status">{announcement}</div> : null}
         {dbReady ? children : <SetupNotice />}
         <Toaster />
       </body>

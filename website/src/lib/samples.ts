@@ -7,7 +7,7 @@ import type { Biodata, User } from "./types";
  * portraits (public/samples), carry `sample: true`, show a "Sample" tag everywhere,
  * and can't receive interests. They have no phone number, so nobody can log in as them.
  *
- * Set SANGAM_SAMPLE_PROFILES=off in Vercel to remove them.
+ * Turn them off from the admin panel (Settings), or set SANGAM_SAMPLE_PROFILES=off in Vercel.
  */
 
 type Seed = Omit<Biodata, "userId" | "gender" | "photos" | "published" | "updatedAt" | "sample">;
@@ -63,21 +63,26 @@ export function sampleBiodatas() {
   return [...BRIDES.map((s, i) => toBiodata(s, i, "female")), ...GROOMS.map((s, i) => toBiodata(s, i, "male"))];
 }
 
-/** Adds the sample profiles once, or removes them when SANGAM_SAMPLE_PROFILES=off. */
-export async function ensureSamples() {
+export async function samplesEnabled() {
+  if (process.env.SANGAM_SAMPLE_PROFILES === "off") return false;
+  return (await kv().get("settings:samples")) !== "off";
+}
+
+export async function sampleCount() {
+  return (await kv().get(MARKER)) ? sampleBiodatas().length : 0;
+}
+
+async function removeSamples() {
   const db = kv();
-  const seeded = await db.get(MARKER);
-  if (process.env.SANGAM_SAMPLE_PROFILES === "off") {
-    if (seeded) {
-      for (const b of sampleBiodatas()) {
-        await db.zrem("bios:pub", b.userId);
-        await db.del(`bio:${b.userId}`, `user:${b.userId}`);
-      }
-      await db.del(MARKER);
-    }
-    return;
+  for (const b of sampleBiodatas()) {
+    await db.zrem("bios:pub", b.userId);
+    await db.del(`bio:${b.userId}`, `user:${b.userId}`);
   }
-  if (seeded) return;
+  await db.del(MARKER);
+}
+
+async function seedSamples() {
+  const db = kv();
   for (const b of sampleBiodatas()) {
     const user: User = {
       id: b.userId,
@@ -87,10 +92,27 @@ export async function ensureSamples() {
       createdFor: "Myself",
       passHash: "sample-profile-no-login",
       createdAt: b.updatedAt,
+      lastActive: b.updatedAt,
+      status: "active",
     };
     await db.set(`user:${b.userId}`, JSON.stringify(user));
     await db.set(`bio:${b.userId}`, JSON.stringify(b));
     await db.zadd("bios:pub", b.updatedAt, b.userId);
   }
   await db.set(MARKER, String(Date.now()));
+}
+
+/** Makes the stored sample profiles match the admin setting (or SANGAM_SAMPLE_PROFILES=off). */
+export async function ensureSamples() {
+  const seeded = Boolean(await kv().get(MARKER));
+  const wanted = await samplesEnabled();
+  if (wanted && !seeded) await seedSamples();
+  if (!wanted && seeded) await removeSamples();
+}
+
+/** Admin switch: turn the sample profiles on or off for everyone. */
+export async function setSamplesEnabled(on: boolean) {
+  if (on) await kv().del("settings:samples");
+  else await kv().set("settings:samples", "off");
+  await ensureSamples();
 }

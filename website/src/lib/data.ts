@@ -11,6 +11,7 @@ import {
   type Interest,
   type Message,
   type Relation,
+  type Report,
   type User,
 } from "./types";
 
@@ -23,6 +24,12 @@ import {
    chat:{cid}           zset of Message JSON by ts
    chats:{id}           zset of other user ids by last message ts
    read:{cid}:{id}      last read ts
+   users                zset of all user ids by createdAt
+   counter:profile      last profile number handed out
+   views:{id}           zset of viewer ids by last view ts     viewcount:{id}  total views
+   report:{rid}         Report JSON           reports:open / reports:closed  zsets of report ids by ts
+   stats:{name}         running totals        stats:{name}:{yyyy-mm-dd}  daily totals
+   settings:announcement  banner text shown to everyone
 */
 
 export { ageFrom, completeness, publishProblems } from "./bio";
@@ -46,15 +53,57 @@ export async function findUserIdByPhone(phone: string) {
   return await kv().get(`phone:${phone}`);
 }
 
+export const day = (ts = Date.now()) => new Date(ts + 5.5 * 3600_000).toISOString().slice(0, 10); // IST date
+
+export async function bumpStat(name: string) {
+  await Promise.all([kv().incr(`stats:${name}`), kv().incr(`stats:${name}:${day()}`, 60 * 60 * 24 * 60)]);
+}
+
 export async function createUser(input: { name: string; phone: string; gender: Gender; createdFor: string; passHash: string }) {
   const id = newId();
   const claimed = await kv().set(`phone:${input.phone}`, id, { nx: true });
   if (!claimed) return null;
-  const user: User = { id, ...input, createdAt: Date.now() };
+  const now = Date.now();
+  const profileNo = 1000 + (await kv().incr("counter:profile"));
+  const user: User = { id, ...input, createdAt: now, lastActive: now, profileNo, status: "active" };
   await kv().set(`user:${id}`, JSON.stringify(user));
-  const bio: Biodata = { userId: id, gender: input.gender, photos: [], published: false, updatedAt: Date.now(), fullName: input.name };
+  const bio: Biodata = { userId: id, gender: input.gender, photos: [], published: false, updatedAt: now, fullName: input.name, profileNo };
   await kv().set(`bio:${id}`, JSON.stringify(bio));
+  await kv().zadd("users", now, id);
+  await bumpStat("signups");
   return user;
+}
+
+export async function saveUser(user: User) {
+  await kv().set(`user:${user.id}`, JSON.stringify(user));
+}
+
+/** Records activity at most once a minute, and backfills fields older accounts lack. */
+export async function touchUser(user: User) {
+  const now = Date.now();
+  if (user.lastActive && now - user.lastActive < 60_000 && user.profileNo) return user;
+  const next: User = { ...user, lastActive: now, status: user.status ?? "active" };
+  if (!next.profileNo) {
+    next.profileNo = 1000 + (await kv().incr("counter:profile"));
+    const bio = await getBiodata(user.id);
+    if (bio) await kv().set(`bio:${user.id}`, JSON.stringify({ ...bio, profileNo: next.profileNo }));
+  }
+  await saveUser(next);
+  await kv().zadd("users", user.createdAt, user.id);
+  return next;
+}
+
+export const profileCode = (n?: number) => (n ? `SS${n}` : "");
+
+export function activityLabel(ts?: number) {
+  if (!ts) return "";
+  const mins = Math.floor((Date.now() - ts) / 60_000);
+  if (mins < 3) return "Online";
+  if (mins < 60) return `Active ${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `Active ${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return days < 30 ? `Active ${days} day${days === 1 ? "" : "s"} ago` : "Active over a month ago";
 }
 
 // ---------- biodata ----------
@@ -83,7 +132,7 @@ export async function saveBiodata(id: string, patch: Partial<Biodata>) {
   const cur = await getBiodata(id);
   if (!cur) throw new Error("Biodata not found");
   const next: Biodata = { ...cur, ...patch, userId: id, gender: cur.gender, updatedAt: Date.now() };
-  if (next.published && publishProblems(next).length) next.published = false;
+  if (next.published && (publishProblems(next).length || next.adminHidden)) next.published = false;
   await kv().set(`bio:${id}`, JSON.stringify(next));
   if (next.published) await kv().zadd("bios:pub", next.updatedAt, id);
   else await kv().zrem("bios:pub", id);
@@ -151,6 +200,7 @@ async function connect(a: string, b: string, interest: Interest) {
   const now = Date.now();
   interest.status = "accepted";
   interest.updatedAt = now;
+  await bumpStat("connections");
   await kv().set(`int:${interest.from}:${interest.to}`, JSON.stringify(interest));
   await Promise.all([kv().zadd(`conn:${a}`, now, b), kv().zadd(`conn:${b}`, now, a)]);
 }
@@ -167,6 +217,7 @@ export async function sendInterest(me: string, other: string) {
   const interest: Interest = { from: me, to: other, status: "pending", createdAt: now, updatedAt: now };
   await kv().set(`int:${me}:${other}`, JSON.stringify(interest));
   await Promise.all([kv().zadd(`out:${me}`, now, other), kv().zadd(`in:${other}`, now, me)]);
+  await bumpStat("interests");
   return "sent" as const;
 }
 
@@ -246,6 +297,7 @@ export async function sendMessage(me: string, other: string, text: string) {
     kv().zadd(`chats:${other}`, ts, me),
     kv().set(`read:${cid}:${me}`, String(ts)),
   ]);
+  await bumpStat("messages");
   return msg;
 }
 
@@ -314,4 +366,107 @@ export async function chatListFor(me: string): Promise<ChatSummary[]> {
       unread: c?.unread ?? 0,
     };
   });
+}
+
+// ---------- profile views ----------
+
+export async function recordView(viewer: string, target: string) {
+  if (viewer === target) return;
+  const key = `views:${target}`;
+  const last = await kv().zscore(key, viewer);
+  if (last && Date.now() - last < 30 * 60_000) return; // count a visitor again only after 30 minutes
+  await Promise.all([kv().zadd(key, Date.now(), viewer), kv().incr(`viewcount:${target}`)]);
+}
+
+export async function viewsFor(id: string) {
+  const [count, recent] = await Promise.all([kv().get(`viewcount:${id}`), kv().zrevrange(`views:${id}`, 0, 11)]);
+  return { count: Number(count ?? 0), recent };
+}
+
+// ---------- reports ----------
+
+export async function createReport(r: Omit<Report, "id" | "ts" | "status">) {
+  const report: Report = { ...r, id: newId(), ts: Date.now(), status: "open" };
+  await kv().set(`report:${report.id}`, JSON.stringify(report));
+  await kv().zadd("reports:open", report.ts, report.id);
+  return report;
+}
+
+export async function listReports(which: "open" | "closed", limit = 200) {
+  const ids = await kv().zrevrange(`reports:${which}`, 0, limit - 1);
+  const rows = await kv().mget(ids.map((i) => `report:${i}`));
+  return rows.map((r) => parse<Report>(r)).filter((r): r is Report => Boolean(r));
+}
+
+export async function closeReport(id: string, status: "dismissed" | "actioned") {
+  const r = parse<Report>(await kv().get(`report:${id}`));
+  if (!r) return null;
+  r.status = status;
+  await kv().set(`report:${id}`, JSON.stringify(r));
+  await kv().zrem("reports:open", id);
+  await kv().zadd("reports:closed", Date.now(), id);
+  return r;
+}
+
+export async function reportsAgainst(target: string) {
+  const all = [...(await listReports("open", 500)), ...(await listReports("closed", 500))];
+  return all.filter((r) => r.target === target);
+}
+
+// ---------- announcement ----------
+
+export async function getAnnouncement() {
+  return (await kv().get("settings:announcement")) ?? "";
+}
+
+export async function setAnnouncement(text: string) {
+  if (text.trim()) await kv().set("settings:announcement", text.trim().slice(0, 280));
+  else await kv().del("settings:announcement");
+}
+
+// ---------- admin ----------
+
+export async function listUserIds(limit = 2000) {
+  return await kv().zrevrange("users", 0, limit - 1);
+}
+
+export async function userCount() {
+  return await kv().zcard("users");
+}
+
+export async function statTotals() {
+  const names = ["signups", "interests", "connections", "messages"];
+  const vals = await kv().mget(names.map((n) => `stats:${n}`));
+  return Object.fromEntries(names.map((n, i) => [n, Number(vals[i] ?? 0)])) as Record<string, number>;
+}
+
+export async function dailyStat(name: string, days = 14) {
+  const dates = Array.from({ length: days }, (_, i) => day(Date.now() - (days - 1 - i) * 86400_000));
+  const vals = await kv().mget(dates.map((d) => `stats:${name}:${d}`));
+  return dates.map((d, i) => ({ date: d, value: Number(vals[i] ?? 0) }));
+}
+
+/** Suspends or restores an account. Suspended members can't log in and their biodata is hidden. */
+export async function setSuspended(id: string, suspended: boolean) {
+  const user = await getUser(id);
+  if (!user) return null;
+  await saveUser({ ...user, status: suspended ? "suspended" : "active" });
+  if (suspended) await saveBiodata(id, { published: false });
+  return user;
+}
+
+/** Permanently removes an account, its biodata, connections and saved lists. Messages stay with the other side. */
+export async function deleteAccount(id: string) {
+  const user = await getUser(id);
+  const bio = await getBiodata(id);
+  const conns = await kv().zrevrange(`conn:${id}`, 0, 999);
+  await Promise.all(conns.map((o) => kv().zrem(`conn:${o}`, id)));
+  const [ins, outs] = await Promise.all([kv().zrevrange(`in:${id}`, 0, 999), kv().zrevrange(`out:${id}`, 0, 999)]);
+  await Promise.all([...ins.map((o) => kv().zrem(`out:${o}`, id)), ...outs.map((o) => kv().zrem(`in:${o}`, id))]);
+  await kv().zrem("bios:pub", id);
+  await kv().zrem("users", id);
+  const keys = [`user:${id}`, `bio:${id}`, `conn:${id}`, `in:${id}`, `out:${id}`, `saved:${id}`, `chats:${id}`, `views:${id}`, `viewcount:${id}`];
+  if (user?.phone) keys.push(`phone:${user.phone}`);
+  await kv().del(...keys);
+  return { user, bio };
 }
