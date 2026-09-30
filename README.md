@@ -59,6 +59,7 @@ A festive wedding look: warm ivory `#FFF5E8` covered in colourful line doodles o
 - `index.html` the whole app: card designer, animated video maker, and the Plan page. Phones get a top bar, a bottom tab bar (Details, Card, Video, Plan) and a download bar above it; screens 1024px and wider get a side menu with the plan card, a large preview and the controls beside it.
 - `admin.html` the owner's panel at `/admin`: payments to approve, customers (give Pro days, remove Pro, new password, CSV), earnings, and Settings (UPI ID, prices, free trial days).
 - `api/` Vercel functions, the same model as PakkaBill: `auth` (sign up, log in, mobile number and password), `me`, `config`, `pay` (submit a UTR, list my payments), `admin`.
+- The video (about 50 seconds, 9:16): the intro writes the title out by hand; the groom and the bride each walk in; the **varmala** under a mandap, where the bride lifts her garland over the groom's head and places it round his neck, then he does the same for her (the one receiving bows their head, and petals burst as each garland lands); the functions; a **countdown** of days left to the wedding (from the day the video is made); the date and venue; and a closing **namaste**, both with palms joined, bowing to invite the guests. A **guest name** (Video → Personal invite) greets that family by name at the start and the end, and goes into the file name, so one video can be made per family.
 - `qrcode.js` QR code generator (qrcode-generator 1.4.4, MIT) for the UPI QR.
 
 ### Plans

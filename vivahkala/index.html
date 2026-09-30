@@ -237,11 +237,12 @@ code{font:500 13px ui-monospace,Menlo,monospace;background:var(--surface2);paddi
   <div class="block"><h2>Faces from real photos</h2><p class="hint">Upload a clear, front-facing photo, then drag and zoom so the face fills the oval. It is placed on the cartoon groom and bride.</p>
    <div class="faces"><div class="face" data-kind="groom"><canvas width="180" height="220"></canvas><strong>Groom</strong><div class="row" style="justify-content:center"><label class="btn ghost small file">Upload photo<input type="file" accept="image/*" data-face="groom"></label><button class="btn ghost small" data-adj="groom" type="button" hidden>Adjust</button><button class="btn ghost small" data-del="groom" type="button" hidden>Remove</button></div></div>
    <div class="face" data-kind="bride"><canvas width="180" height="220"></canvas><strong>Bride</strong><div class="row" style="justify-content:center"><label class="btn ghost small file">Upload photo<input type="file" accept="image/*" data-face="bride"></label><button class="btn ghost small" data-adj="bride" type="button" hidden>Adjust</button><button class="btn ghost small" data-del="bride" type="button" hidden>Remove</button></div></div></div></div>
+  <div class="block"><h2>Personal invite</h2><p class="hint">Add a guest's name and the video greets them by name at the start and the end. Change it and create again for each family.</p><label class="field"><span>Guest name (optional)</span><input data-k="guest" placeholder="Sharma ji &amp; family" autocomplete="off" maxlength="60"></label></div>
   <details class="sec"><summary>Outfits</summary><div class="colors" style="margin-top:0"><label class="swatch"><input type="color" id="gCol">Sherwani</label><label class="swatch"><input type="color" id="bCol">Lehenga</label>
    <label class="field"><span>Groom's safa</span><select id="turban"><option value="auto">As in template</option><option value="on">Show safa</option><option value="off">No safa</option></select></label><button class="btn ghost small" id="resetOut" type="button">Use template outfits</button></div></details>
   <details class="sec"><summary>Music</summary><div class="grid2"><label class="field"><span>Background music</span><select id="music"><option value="shehnai">Shehnai with dholak</option><option value="dhol">Dhol beat</option><option value="piano">Soft piano</option><option value="own">My own song</option><option value="none">No music</option></select></label>
    <label class="field"><span>Volume</span><input type="range" id="vol" min="0" max="1" step="0.05"></label><div class="row wide" id="songRow" hidden><label class="btn ghost small file">Choose song file<input type="file" accept="audio/*" id="songIn"></label><span class="hint" id="songName">No song chosen yet</span></div></div></details>
-  <details class="sec"><summary>Video options</summary><div class="grid2"><label class="field"><span>Opening title</span><input data-k="title"></label><label class="field"><span>Quality</span><select id="quality"><option value="720">HD 720p</option><option value="540">540p, smaller file</option></select></label><label class="check"><input type="checkbox" id="vEvents"> Include the functions scene</label></div></details>
+  <details class="sec"><summary>Video options</summary><div class="grid2"><label class="field"><span>Opening title</span><input data-k="title"></label><label class="field"><span>Quality</span><select id="quality"><option value="720">HD 720p</option><option value="540">540p, smaller file</option></select></label><label class="check"><input type="checkbox" id="vEvents"> Include the functions scene</label><label class="check"><input type="checkbox" id="vCount"> Include the countdown to the wedding day</label></div></details>
   <button class="linkbtn" data-goto="details" type="button">Edit names, dates and functions</button>
  </div></div></section>
 <section id="p-plan" hidden>
@@ -288,8 +289,8 @@ function fmtDate(s,lang,style){const d=parseD(s);if(!d)return'';const hi=lang===
   if(style==='weekday')return D;if(style==='monthyear')return`${M} ${y}`;if(style==='day')return String(day);
   return hi?`${D}, ${day} ${M} ${y}`:`${D}, ${ordinal(day)} ${M} ${y}`;}
 function fmtTime(s,lang){const m=/^(\d{1,2}):(\d{2})/.exec(s||'');if(!m)return'';const h=+m[1],h12=((h+11)%12)+1;if(lang==='hi'){const p=h<4?'रात':h<12?'सुबह':h<16?'दोपहर':h<19?'शाम':'रात';return`${p} ${h12}:${m[2]} बजे`;}return`${h12}:${m[2]} ${h<12?'AM':'PM'}`;}
-const LBL={en:{groom:'The Groom',bride:'The Bride',save:'Save the Date',fest:'Wedding Festivities',venue:'Venue',follow:'Formal invitation to follow',married:'are getting married',at:'at',addfn:'Add your functions in Details'},
- hi:{groom:'दूल्हा',bride:'दुल्हन',save:'शुभ तिथि',fest:'मांगलिक कार्यक्रम',venue:'विवाह स्थल',follow:'निमंत्रण पत्र शीघ्र',married:'परिणय सूत्र में बंधने जा रहे हैं',at:'',addfn:'विवरण में कार्यक्रम जोड़ें'}};
+const LBL={en:{dear:'Dear',invite:'With folded hands, we humbly invite you',varmala:'Varmala',countTitle:'The countdown begins',daysToGo:'days to go',dayToGo:'day to go',countLine:"Save the date. We can't wait to celebrate with you!",groom:'The Groom',bride:'The Bride',save:'Save the Date',fest:'Wedding Festivities',venue:'Venue',follow:'Formal invitation to follow',married:'are getting married',at:'at',addfn:'Add your functions in Details'},
+ hi:{dear:'आदरणीय',invite:'करबद्ध निवेदन — पधारकर वर-वधू को आशीर्वाद दें',varmala:'जयमाला',countTitle:'शुभ घड़ी की उलटी गिनती',daysToGo:'दिन शेष',dayToGo:'दिन शेष',countLine:'तिथि याद रखें, आपकी प्रतीक्षा रहेगी',groom:'दूल्हा',bride:'दुल्हन',save:'शुभ तिथि',fest:'मांगलिक कार्यक्रम',venue:'विवाह स्थल',follow:'निमंत्रण पत्र शीघ्र',married:'परिणय सूत्र में बंधने जा रहे हैं',at:'',addfn:'विवरण में कार्यक्रम जोड़ें'}};
 
 /* primitives */
 const MG=[['#fbbf24','#f59e0b'],['#fb923c','#ea580c']];
@@ -545,35 +546,72 @@ function turbanTop(c,cx,cy,fw,fh,col,trim,t){c.save();const top=cy-fh*0.5,band=c
   c.strokeStyle=trim;c.lineWidth=fh*0.022;c.beginPath();c.moveTo(cx-fw*0.56,band);c.quadraticCurveTo(cx,band+fh*0.09,cx+fw*0.56,band);c.stroke();
   const sw=Math.sin(t*2)*0.06;c.beginPath();c.moveTo(cx+fw*0.02,band-fh*0.22);c.quadraticCurveTo(cx+fw*(0.05+sw),top-fh*0.32,cx+fw*(0.3+sw),top-fh*0.44);c.stroke();
   c.fillStyle=trim;c.beginPath();c.ellipse(cx+fw*0.02,band-fh*0.2,fw*0.075,fh*0.06,0,0,TAU);c.fill();c.fillStyle='#e11d48';c.beginPath();c.arc(cx+fw*0.02,band-fh*0.2,fw*0.035,0,TAU);c.fill();c.restore();}
-function gArm(c,x,y,H,rot,o){c.save();c.translate(x,y);c.rotate(rot);c.fillStyle=shade(o.coat,-0.08);rr(c,-H*0.032,-H*0.012,H*0.064,H*0.245,H*0.03);c.fill();c.fillStyle=o.trim;c.fillRect(-H*0.032,H*0.205,H*0.064,H*0.016);c.fillStyle=o.skin;c.beginPath();c.arc(0,H*0.248,H*0.03,0,TAU);c.fill();c.restore();}
-function drawGroom(c,x,y,H,t,o){c.save();c.translate(x,y);const walk=o.walk||0;c.translate(0,-((walk?Math.abs(Math.sin(t*7))*H*0.014*walk:Math.sin(t*2.2)*H*0.004)+(o.bounce?Math.abs(Math.sin(t*4))*H*0.03:0)));
+function gArm(c,x,y,H,rot,o,len){len=len||1;const A=H*0.245*len;c.save();c.translate(x,y);c.rotate(rot);c.fillStyle=shade(o.coat,-0.08);rr(c,-H*0.032,-H*0.012,H*0.064,A,H*0.03);c.fill();c.fillStyle=o.trim;c.fillRect(-H*0.032,A-H*0.04,H*0.064,H*0.016);c.fillStyle=o.skin;c.beginPath();c.arc(0,A+H*0.003,H*0.03,0,TAU);c.fill();c.restore();}
+function drawGroom(c,x,y,H,t,o){c.save();c.translate(x,y);const walk=o.walk||0,bow=clamp(o.bow||0),bob=(walk?Math.abs(Math.sin(t*7))*H*0.014*walk:Math.sin(t*2.2)*H*0.004)+(o.bounce?Math.abs(Math.sin(t*4))*H*0.03:0)+(o.lift||0)*H;c.translate(0,-bob);
   const shY=-H*0.62,neckY=-H*0.64,hipY=-H*0.37,fh=H*0.34,fw=fh*0.82,fcy=neckY-fh*0.43,sw=Math.sin(t*7)*0.32*walk;
-  if(o.turbanOn){c.fillStyle=shade(o.turban,-0.12);c.beginPath();c.moveTo(fw*0.25,fcy-fh*0.2);c.quadraticCurveTo(fw*0.95,fcy+fh*0.35,fw*0.55,neckY+H*0.16);c.lineTo(fw*0.32,neckY+H*0.15);c.quadraticCurveTo(fw*0.6,fcy+fh*0.35,fw*0.05,fcy-fh*0.1);c.closePath();c.fill();}
   for(const s of[-1,1]){c.save();c.translate(s*H*0.05,hipY);c.rotate(s*sw);c.fillStyle=o.pants;rr(c,-H*0.036,0,H*0.072,H*0.34,H*0.03);c.fill();c.fillStyle=o.shoe;c.beginPath();c.ellipse(s*H*0.018,H*0.35,H*0.058,H*0.022,0,0,TAU);c.fill();c.restore();}
+  c.save();bowT(c,hipY,bow,H);if(o.turbanOn){c.fillStyle=shade(o.turban,-0.12);c.beginPath();c.moveTo(fw*0.25,fcy-fh*0.2);c.quadraticCurveTo(fw*0.95,fcy+fh*0.35,fw*0.55,neckY+H*0.16);c.lineTo(fw*0.32,neckY+H*0.15);c.quadraticCurveTo(fw*0.6,fcy+fh*0.35,fw*0.05,fcy-fh*0.1);c.closePath();c.fill();}
   const cg=c.createLinearGradient(-H*0.2,0,H*0.2,0);cg.addColorStop(0,shade(o.coat,-0.16));cg.addColorStop(0.5,shade(o.coat,0.1));cg.addColorStop(1,shade(o.coat,-0.22));c.fillStyle=cg;
   c.beginPath();c.moveTo(-H*0.13,shY);c.lineTo(H*0.13,shY);c.quadraticCurveTo(H*0.165,shY+H*0.03,H*0.16,shY+H*0.12);c.lineTo(H*0.19,-H*0.17);c.lineTo(-H*0.19,-H*0.17);c.lineTo(-H*0.16,shY+H*0.12);c.quadraticCurveTo(-H*0.165,shY+H*0.03,-H*0.13,shY);c.closePath();c.fill();
   c.fillStyle=o.trim;c.fillRect(-H*0.19,-H*0.195,H*0.38,H*0.025);c.strokeStyle=o.trim;c.lineWidth=H*0.006;c.beginPath();c.moveTo(0,shY+H*0.02);c.lineTo(0,-H*0.195);c.stroke();
   for(let i=0;i<6;i++){c.beginPath();c.arc(H*0.014,shY+H*0.05+i*H*0.048,H*0.0065,0,TAU);c.fill();}
   c.fillStyle=o.stole;c.beginPath();c.moveTo(-H*0.13,shY+H*0.005);c.lineTo(-H*0.06,shY-H*0.004);c.lineTo(H*0.19,-H*0.29);c.lineTo(H*0.16,-H*0.23);c.closePath();c.fill();c.lineWidth=H*0.004;c.stroke();
   c.fillStyle=o.trim;rr(c,-H*0.05,shY-H*0.014,H*0.1,H*0.03,H*0.01);c.fill();
-  gArm(c,-H*0.14,shY+H*0.02,H,0.1-sw*0.9,o);gArm(c,H*0.14,shY+H*0.02,H,o.wave?(-2.35+Math.sin(t*9)*0.35):(-0.1-sw*0.9),o);
-  c.fillStyle=o.skin;rr(c,-H*0.03,neckY-H*0.035,H*0.06,H*0.055,H*0.012);c.fill();faceOval(c,o.face,0,fcy,fw,fh);if(o.turbanOn)turbanTop(c,0,fcy,fw,fh,o.turban,o.trim,t);
-  varmala(c,0,neckY+H*0.01,H,o.drop||0,o.garland||0);c.restore();}
-function bArm(c,x,y,H,rot,o){c.save();c.translate(x,y);c.rotate(rot);c.fillStyle=o.blouse;rr(c,-H*0.028,-H*0.012,H*0.056,H*0.1,H*0.025);c.fill();c.fillStyle=o.skin;rr(c,-H*0.022,H*0.075,H*0.044,H*0.155,H*0.02);c.fill();c.fillStyle='#c1121f';for(let i=0;i<4;i++)c.fillRect(-H*0.024,H*0.165+i*H*0.012,H*0.048,H*0.006);c.fillStyle=o.skin;c.beginPath();c.arc(0,H*0.24,H*0.026,0,TAU);c.fill();c.restore();}
-function drawBride(c,x,y,H,t,o){c.save();c.translate(x,y);const walk=o.walk||0;c.translate(0,-((walk?Math.abs(Math.sin(t*6))*H*0.01*walk:Math.sin(t*2.2+1)*H*0.004)+(o.bounce?Math.abs(Math.sin(t*4+0.8))*H*0.03:0)));
+  const A=armsFor(o,x,y,bob,[-H*0.14,shY+H*0.02],[H*0.14,shY+H*0.02],H*0.248,0.1-sw*0.9,o.wave?(-2.35+Math.sin(t*9)*0.35):(-0.1-sw*0.9),shY+H*0.13);gArm(c,-H*0.14,shY+H*0.02,H,A[0].rot,o,A[0].len);gArm(c,H*0.14,shY+H*0.02,H,A[1].rot,o,A[1].len);
+  c.fillStyle=o.skin;rr(c,-H*0.03,neckY-H*0.035,H*0.06,H*0.055,H*0.012);c.fill();c.save();nodT(c,neckY,bow,H);faceOval(c,o.face,0,fcy,fw,fh);if(o.turbanOn)turbanTop(c,0,fcy,fw,fh,o.turban,o.trim,t);c.restore();
+  varmala(c,0,neckY+H*0.01,H,o.drop||0,o.garland||0);palms(c,0,shY+H*0.11,H,o.skin,o.coat,(o.namaste||0));c.restore();c.restore();}
+function bArm(c,x,y,H,rot,o,len){const k=len||1;c.save();c.translate(x,y);c.rotate(rot);c.fillStyle=o.blouse;rr(c,-H*0.028,-H*0.012,H*0.056,H*0.1*k,H*0.025);c.fill();c.fillStyle=o.skin;rr(c,-H*0.022,H*0.075*k,H*0.044,H*0.155*k,H*0.02);c.fill();c.fillStyle='#c1121f';for(let i=0;i<4;i++)c.fillRect(-H*0.024,H*0.165*k+i*H*0.012,H*0.048,H*0.006);c.fillStyle=o.skin;c.beginPath();c.arc(0,H*0.24*k,H*0.026,0,TAU);c.fill();c.restore();}
+function drawBride(c,x,y,H,t,o){c.save();c.translate(x,y);const walk=o.walk||0,bow=clamp(o.bow||0),bob=(walk?Math.abs(Math.sin(t*6))*H*0.01*walk:Math.sin(t*2.2+1)*H*0.004)+(o.bounce?Math.abs(Math.sin(t*4+0.8))*H*0.03:0)+(o.lift||0)*H;c.translate(0,-bob);
   const waistY=-H*0.43,shY=-H*0.6,neckY=-H*0.62,fh=H*0.31,fw=fh*0.82,fcy=neckY-fh*0.43,sw=Math.sin(t*2.4)*H*0.01+(walk?Math.sin(t*6)*H*0.012*walk:0);
-  c.fillStyle=hexA(o.dupatta,0.9);c.beginPath();c.moveTo(-fw*0.64,fcy-fh*0.05);c.bezierCurveTo(-fw*0.72,fcy-fh*0.8,fw*0.72,fcy-fh*0.8,fw*0.64,fcy-fh*0.05);c.quadraticCurveTo(H*0.19+sw,-H*0.42,H*0.235+sw,-H*0.14);c.lineTo(-H*0.235+sw,-H*0.14);c.quadraticCurveTo(-H*0.19+sw,-H*0.42,-fw*0.64,fcy-fh*0.05);c.closePath();c.fill();
+  c.save();bowT(c,-H*0.43,bow,H);c.fillStyle=hexA(o.dupatta,0.9);c.beginPath();c.moveTo(-fw*0.64,fcy-fh*0.05);c.bezierCurveTo(-fw*0.72,fcy-fh*0.8,fw*0.72,fcy-fh*0.8,fw*0.64,fcy-fh*0.05);c.quadraticCurveTo(H*0.19+sw,-H*0.42,H*0.235+sw,-H*0.14);c.lineTo(-H*0.235+sw,-H*0.14);c.quadraticCurveTo(-H*0.19+sw,-H*0.42,-fw*0.64,fcy-fh*0.05);c.closePath();c.fill();c.restore();
   const sg=c.createLinearGradient(-H*0.32,0,H*0.32,0);sg.addColorStop(0,shade(o.skirt,-0.25));sg.addColorStop(0.5,shade(o.skirt,0.1));sg.addColorStop(1,shade(o.skirt,-0.3));c.fillStyle=sg;
   c.beginPath();c.moveTo(-H*0.1,waistY);c.lineTo(H*0.1,waistY);c.quadraticCurveTo(H*0.2,-H*0.2,H*0.31+sw,0);c.quadraticCurveTo(0,H*0.035,-H*0.31+sw,0);c.quadraticCurveTo(-H*0.2,-H*0.2,-H*0.1,waistY);c.closePath();c.fill();
   c.strokeStyle=hexA(shade(o.skirt,-0.4),0.35);c.lineWidth=H*0.004;for(let i=-3;i<=3;i++){c.beginPath();c.moveTo(i*H*0.025,waistY+H*0.02);c.quadraticCurveTo(i*H*0.06,-H*0.2,i*H*0.09+sw*0.3,-H*0.01);c.stroke();}
   c.strokeStyle=o.trim;c.lineWidth=H*0.028;c.beginPath();c.moveTo(-H*0.3+sw,-H*0.012);c.quadraticCurveTo(0,H*0.02,H*0.3+sw,-H*0.012);c.stroke();
   c.fillStyle=hexA(o.trim,0.85);const R=rng(3);for(let i=0;i<26;i++){const yy=waistY+H*0.05+R()*H*0.36,sp=lerp(H*0.1,H*0.28,(yy-waistY)/-waistY);c.beginPath();c.arc((R()*2-1)*sp*0.9,yy,H*0.006,0,TAU);c.fill();}
-  c.fillStyle=o.blouse;c.beginPath();c.moveTo(-H*0.115,shY);c.lineTo(H*0.115,shY);c.lineTo(H*0.1,waistY+H*0.01);c.lineTo(-H*0.1,waistY+H*0.01);c.closePath();c.fill();c.fillStyle=o.trim;c.fillRect(-H*0.105,waistY-H*0.004,H*0.21,H*0.02);
-  const ws=walk?Math.sin(t*6)*0.18*walk:0;bArm(c,-H*0.12,shY+H*0.015,H,o.hold?-0.45:0.12+ws,o);bArm(c,H*0.12,shY+H*0.015,H,o.hold?0.45:-0.12+ws,o);
+  c.save();bowT(c,waistY,bow,H);c.fillStyle=o.blouse;c.beginPath();c.moveTo(-H*0.115,shY);c.lineTo(H*0.115,shY);c.lineTo(H*0.1,waistY+H*0.01);c.lineTo(-H*0.1,waistY+H*0.01);c.closePath();c.fill();c.fillStyle=o.trim;c.fillRect(-H*0.105,waistY-H*0.004,H*0.21,H*0.02);
+  const ws=walk?Math.sin(t*6)*0.18*walk:0,A=armsFor(o,x,y,bob,[-H*0.12,shY+H*0.015],[H*0.12,shY+H*0.015],H*0.24,o.hold?-0.45:0.12+ws,o.hold?0.45:-0.12+ws,shY+H*0.12);bArm(c,-H*0.12,shY+H*0.015,H,A[0].rot,o,A[0].len);bArm(c,H*0.12,shY+H*0.015,H,A[1].rot,o,A[1].len);
   c.fillStyle=o.skin;rr(c,-H*0.026,neckY-H*0.03,H*0.052,H*0.05,H*0.012);c.fill();c.strokeStyle=o.trim;c.lineWidth=H*0.011;c.beginPath();c.arc(0,shY-H*0.018,H*0.048,0.25,Math.PI-0.25);c.stroke();c.fillStyle='#e11d48';c.beginPath();c.arc(0,shY+H*0.03,H*0.01,0,TAU);c.fill();
-  faceOval(c,o.face,0,fcy,fw,fh);c.strokeStyle=o.trim;c.lineWidth=H*0.012;c.beginPath();c.moveTo(-fw*0.6,fcy+fh*0.02);c.bezierCurveTo(-fw*0.68,fcy-fh*0.74,fw*0.68,fcy-fh*0.74,fw*0.6,fcy+fh*0.02);c.stroke();
-  c.lineWidth=H*0.004;c.beginPath();c.moveTo(0,fcy-fh*0.53);c.lineTo(0,fcy-fh*0.38);c.stroke();c.fillStyle=o.trim;c.beginPath();c.arc(0,fcy-fh*0.35,H*0.012,0,TAU);c.fill();
-  varmala(c,0,neckY+H*0.01,H,o.drop||0,o.garland||0);c.restore();}
+  c.save();nodT(c,neckY,bow,H);faceOval(c,o.face,0,fcy,fw,fh);c.strokeStyle=o.trim;c.lineWidth=H*0.012;c.beginPath();c.moveTo(-fw*0.6,fcy+fh*0.02);c.bezierCurveTo(-fw*0.68,fcy-fh*0.74,fw*0.68,fcy-fh*0.74,fw*0.6,fcy+fh*0.02);c.stroke();
+  c.lineWidth=H*0.004;c.beginPath();c.moveTo(0,fcy-fh*0.53);c.lineTo(0,fcy-fh*0.38);c.stroke();c.fillStyle=o.trim;c.beginPath();c.arc(0,fcy-fh*0.35,H*0.012,0,TAU);c.fill();c.restore();
+  varmala(c,0,neckY+H*0.01,H,o.drop||0,o.garland||0);palms(c,0,shY+H*0.1,H,o.skin,o.blouse,(o.namaste||0));c.restore();c.restore();}
+/* poses: a polite bow (upper body dips toward the viewer, head nods), reaching arms and namaste */
+function bowT(c,pivotY,bow,H){if(!bow)return;c.translate(0,pivotY+bow*H*0.02);c.scale(1,1-0.15*bow);c.translate(0,-pivotY);}
+function nodT(c,neckY,bow,H){if(!bow)return;c.translate(0,neckY+bow*H*0.04);c.scale(1,1-0.16*bow);c.translate(0,-neckY);}
+// Arm rotation and length (× base) that put the hand at (tx,ty) from a shoulder at (sx,sy).
+function reachArm(sx,sy,tx,ty,base){const dx=tx-sx,dy=ty-sy;return{rot:Math.atan2(-dx,dy),len:clamp(Math.hypot(dx,dy)/base,0.55,1.5)};}
+function blendArm(a,b,k){const d=Math.atan2(Math.sin(b.rot-a.rot),Math.cos(b.rot-a.rot));return{rot:a.rot+d*k,len:lerp(a.len,b.len,k)};}
+// Both arms: resting angles, or reaching for world points (o.reach {L,R,k}), or palms joined at the chest (o.namaste 0..1).
+// Where the hands end up is written to o.out in world coordinates, so a held garland can hang between them.
+function armsFor(o,x,y,bob,shL,shR,base,restL,restR,chestY){const sh=[shL,shR];let A=[{rot:restL,len:1},{rot:restR,len:1}];
+  if(o.reach&&o.reach.k>0){const tg=[o.reach.L,o.reach.R];A=A.map((a,i)=>blendArm(a,reachArm(sh[i][0],sh[i][1],tg[i][0]-x,tg[i][1]-y+bob,base),clamp(o.reach.k)));}
+  if(o.namaste>0){A=A.map((a,i)=>blendArm(a,reachArm(sh[i][0],sh[i][1],(i?1:-1)*base*0.05,chestY,base),clamp(o.namaste)));}
+  if(o.out)A.forEach((a,i)=>{o.out[i?'R':'L']=[x+sh[i][0]-Math.sin(a.rot)*base*a.len,y-bob+sh[i][1]+Math.cos(a.rot)*base*a.len];});return A;}
+// Palms pressed together, fingers up (namaste).
+function palms(c,x,y,H,skin,cuff,k){if(k<0.7)return;c.save();c.globalAlpha*=clamp((k-0.7)/0.3);c.translate(x,y);
+  c.fillStyle=cuff;rr(c,-H*0.034,H*0.012,H*0.068,H*0.02,H*0.008);c.fill();c.fillStyle=skin;
+  for(const s of[-1,1]){c.beginPath();c.ellipse(s*H*0.011,-H*0.022,H*0.015,H*0.043,s*0.12,0,TAU);c.fill();}
+  c.strokeStyle=shade(skin,-0.3);c.lineWidth=Math.max(1,H*0.003);c.beginPath();c.moveTo(0,-H*0.062);c.lineTo(0,H*0.012);c.stroke();c.restore();}
+function bump(p,a,b,r){return Math.min(easeOut((p-a)/r),easeOut((b-p)/r));}
+const smooth=p=>{p=clamp(p);return p*p*(3-2*p);};
+// A varmala held open between two hands, hanging in a curve.
+function heldGarland(c,a,b,sag,H,alpha){if(!(alpha>0)||!a||!b)return;c.save();c.globalAlpha*=clamp(alpha);const n=16,mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2+sag*2;
+  for(let i=0;i<=n;i++){const u=i/n,x=(1-u)*(1-u)*a[0]+2*u*(1-u)*mx+u*u*b[0],y=(1-u)*(1-u)*a[1]+2*u*(1-u)*my+u*u*b[1];if(i%4===2)rose(c,x,y,H*0.02,'#d62839');else marigold(c,x,y,H*0.021,...MG[i%2]);}c.restore();}
+// Petals and sparkles bursting out when a garland lands.
+function burst(c,x,y,p,v,seed){if(p<=0||p>=1)return;const R=rng(seed),cols=['#ff4d6d','#ffd166','#ff8fab','#ffffff','#f77f00'];c.save();
+  for(let i=0;i<24;i++){const a=R()*TAU,sp=(70+R()*130)*v,dx=Math.cos(a)*sp*easeOut(p),dy=Math.sin(a)*sp*easeOut(p)+p*p*140*v;c.globalAlpha=1-p;c.fillStyle=cols[i%cols.length];c.beginPath();c.ellipse(x+dx,y+dy,6*v,3.5*v,a+p*5,0,TAU);c.fill();}
+  c.globalAlpha=1-p;for(let k=0;k<7;k++){const a=k/7*TAU+p*2;sparkle(c,x+Math.cos(a)*70*v*p,y+Math.sin(a)*60*v*p,14*v*(1-p),'#fff7c2');}c.restore();}
+// Wedding mandap: pillars, a canopy with a fringe, marigold strings and a swag across the front.
+function mandap(c,cx,baseY,w,h,col,t){c.save();const top=baseY-h,pw=w*0.045;
+  for(const s of[-1,1]){c.fillStyle=hexA(col,0.16);c.beginPath();c.moveTo(cx+s*(w/2),top+h*0.07);c.quadraticCurveTo(cx+s*w*0.22,top+h*0.34+Math.sin(t*1.2+s)*h*0.012,cx,top+h*0.14);c.lineTo(cx,top+h*0.07);c.closePath();c.fill();}
+  for(const s of[-1,1]){const x=cx+s*w/2,g=c.createLinearGradient(x-pw,0,x+pw,0);g.addColorStop(0,shade(col,-0.3));g.addColorStop(0.5,shade(col,0.3));g.addColorStop(1,shade(col,-0.35));c.fillStyle=g;c.fillRect(x-pw/2,top+h*0.05,pw,h*0.95);
+    c.fillStyle=shade(col,-0.2);for(const yy of[0.34,0.66])c.fillRect(x-pw*0.75,top+h*yy,pw*1.5,h*0.018);c.fillRect(x-pw*0.95,baseY-h*0.03,pw*1.9,h*0.03);
+    for(let k=0;k<2;k++){const sx=x-s*(pw*1.3+k*w*0.055),n=6+k*2;for(let i=0;i<n;i++)marigold(c,sx+Math.sin(t*1.6+i*0.6+k)*w*0.003*i,top+h*0.11+i*h*0.042,w*0.014,...MG[(i+k)%2]);}}
+  c.fillStyle=col;c.beginPath();c.moveTo(cx-w/2-pw,top+h*0.07);c.lineTo(cx,top-h*0.09);c.lineTo(cx+w/2+pw,top+h*0.07);c.closePath();c.fill();
+  c.fillStyle=shade(col,-0.25);c.fillRect(cx-w/2-pw,top+h*0.05,w+2*pw,h*0.04);c.fillStyle=shade(col,0.35);c.beginPath();c.arc(cx,top-h*0.005,h*0.03,0,TAU);c.fill();
+  const n=16;for(let i=0;i<n;i++){const x=lerp(cx-w/2-pw,cx+w/2+pw,(i+0.5)/n);c.fillStyle=i%2?'#e11d48':'#f59e0b';c.beginPath();c.arc(x,top+h*0.09,w*0.02,0,Math.PI);c.fill();}
+  garland(c,cx-w/2,top+h*0.12,cx+w/2,top+h*0.12,h*0.1,w*0.02);c.restore();}
+function daysLeft(s){const d=parseD(s);if(!d)return 0;const n=new Date(),today=new Date(n.getFullYear(),n.getMonth(),n.getDate());return Math.round((d-today)/864e5);}
 function shadowEl(c,x,y,r){c.save();c.fillStyle='rgba(0,0,0,.22)';c.beginPath();c.ellipse(x,y,r,r*0.18,0,0,TAU);c.fill();c.restore();}
 
 /* ---------- video templates ---------- */
@@ -627,23 +665,41 @@ function vtext(c,text,x,y,size,fam,col,o){o=o||{};if(!text)return 0;text=String(
   const fo={fam,style:o.style,weight:o.weight||500,role:o.role||'body'},t2=o.upper?text.toUpperCase():text,maxW=o.maxW||W*0.88;let s=size;c.font=fontCSS(fo,s,text);setLS(c,(o.ls||0)*s);
   c.textAlign=o.align||'center';c.textBaseline='middle';c.fillStyle=col;if(o.shadow){c.shadowColor=o.shadow;c.shadowBlur=s*0.2;c.shadowOffsetY=s*0.04;}
   if(o.wrap){const L=wrapLines(c,t2,maxW).slice(0,o.maxLines||3),lh=s*(o.lh||1.3),y0=y-(L.length-1)*lh/2;L.forEach((ln,i)=>c.fillText(ln,x,y0+i*lh));c.restore();return L.length*lh;}
-  while(c.measureText(t2).width>maxW&&s>size*0.35){s*=0.92;c.font=fontCSS(fo,s,text);setLS(c,(o.ls||0)*s);}c.fillText(t2,x,y);c.restore();return s;}
+  while(c.measureText(t2).width>maxW&&s>size*0.35){s*=0.92;c.font=fontCSS(fo,s,text);setLS(c,(o.ls||0)*s);}if(o.reveal!=null){const r=clamp(o.reveal),tw=c.measureText(t2).width,lx=c.textAlign==='left'?x:x-tw/2;if(r<=0){c.restore();return s;}if(r<1){c.save();c.shadowColor='transparent';sparkle(c,lx+tw*r,y,s*0.22,'#fff7c2');c.restore();c.beginPath();c.rect(lx-s,y-s*1.5,s+tw*r,s*3);c.clip();}}c.fillText(t2,x,y);c.restore();return s;}
 function fade(lt,dur,delay,inD){const a=clamp((lt-delay)/(inD||0.8)),b=clamp((dur-lt)/0.5);return{p:easeOut(a),a:Math.min(easeOut(a),b)};}
-function buildTimeline(d,st){const S=[],add=(id,dur)=>S.push({id,dur});add('intro',5);if(d.order==='bride'){add('bride',4.6);add('groom',4.6);}else{add('groom',4.6);add('bride',4.6);}add('couple',6);
-  const n=(d.events||[]).filter(e=>e.name&&e.name.trim()).length;if(st.vEvents&&n)add('events',Math.min(3.4+n*1.1,10));add('venue',5.5);add('outro',6.5);let t=0;for(const s of S){s.t0=t;t+=s.dur;s.t1=t;}return{scenes:S,total:t};}
+function buildTimeline(d,st){const S=[],add=(id,dur)=>S.push({id,dur});add('intro',5);if(d.order==='bride'){add('bride',4.6);add('groom',4.6);}else{add('groom',4.6);add('bride',4.6);}add('couple',9.5);
+  const n=(d.events||[]).filter(e=>e.name&&e.name.trim()).length;if(st.vEvents&&n)add('events',Math.min(3.4+n*1.1,10));const dl=daysLeft(d.date);if(st.vCount!==false&&dl>0&&dl<1000)add('countdown',4.6);add('venue',5.5);add('outro',7.5);let t=0;for(const s of S){s.t0=t;t+=s.dur;s.t1=t;}return{scenes:S,total:t};}
 function names(d){return d.order==='bride'?[d.bride,d.groom]:[d.groom,d.bride];}
 const SC={
  intro(c,W,H,t,lt,dur,X,d,v){const T=X.T,P=T.pal,F=T.fonts;const f0=fade(lt,dur,0.1,1);c.save();c.globalAlpha=f0.a;emblem(c,T.emblem,W/2,H*0.4,150*v*(0.75+0.25*easeBack(lt/1.2)),t,P,v);c.restore();
+  if(d.guest)vtext(c,`${(LBL[d.lang]||LBL.en).dear} ${d.guest},`,W/2,H*0.09,32*v,F.body,P.text,{a:fade(lt,dur,0.2).a,style:'italic',weight:600,maxW:W*0.84});
   vtext(c,d.blessing,W/2,H*0.17,34*v,'Tiro Devanagari Hindi',P.accent,{a:fade(lt,dur,0.3).a});const f2=fade(lt,dur,1,0.9);
-  vtext(c,X.title,W/2,H*0.62+(1-f2.p)*30*v,96*v,F.name,P.ink,{a:f2.a,role:'name',weight:F.nameWeight||400,style:F.nameStyle,shadow:'rgba(0,0,0,.25)'});const[a,b]=names(d);
+  vtext(c,X.title,W/2,H*0.62+(1-f2.p)*30*v,96*v,F.name,P.ink,{a:f2.a,role:'name',weight:F.nameWeight||400,style:F.nameStyle,shadow:'rgba(0,0,0,.25)',reveal:(lt-1)/1.4});const[a,b]=names(d);
   vtext(c,`${a||''} & ${b||''}`,W/2,H*0.71,42*v,F.head,P.text,{a:fade(lt,dur,1.6).a,ls:0.04,role:'head',weight:600});vtext(c,fmtDate(d.date,d.lang,'long'),W/2,H*0.77,30*v,F.body,P.soft,{a:fade(lt,dur,2).a});},
  groom(c,W,H,t,lt,dur,X,d,v){person(c,W,H,t,lt,dur,X,d,v,'groom');},bride(c,W,H,t,lt,dur,X,d,v){person(c,W,H,t,lt,dur,X,d,v,'bride');},
- couple(c,W,H,t,lt,dur,X,d,v){const T=X.T,P=T.pal,F=T.fonts,fy=H*0.93,ch=H*0.46,e=easeOut(lt/1.3),ex=clamp((dur-lt)/0.5),wk=clamp((1.3-lt)/0.3);const gF=d.order==='bride'?0.66:0.34;
-  const gx=lerp(gF<0.5?-W*0.3:W*1.3,W*gF,e),bx=lerp(gF<0.5?W*1.3:-W*0.3,W*(1-gF),e);c.save();c.globalAlpha=ex;
+ // Varmala: the bride lifts her garland over the groom's head and places it round his neck, then he does the same for her.
+ couple(c,W,H,t,lt,dur,X,d,v){const T=X.T,P=T.pal,F=T.fonts,L=LBL[d.lang]||LBL.en,fy=H*0.93,ch=H*0.46,e=easeOut(lt/1.3),ex=clamp((dur-lt)/0.5),wk=clamp((1.3-lt)/0.3),gLeft=d.order!=='bride',gx0=W*(gLeft?0.34:0.66),bx0=W*(gLeft?0.66:0.34);
+  const BT=1.8,GT=4.3,VD=2.2,pg=(lt-GT)/VD,pb=(lt-BT)/VD,hold=smooth((lt-1.2)/0.5),tg=GT+0.76*VD,tb=BT+0.76*VD,t1=Math.min(tg,tb),t2=Math.max(tg,tb);
+  const stepG=Math.min(smooth((pg-0.04)/0.26),smooth((1-pg)/0.2)),stepB=Math.min(smooth((pb-0.04)/0.26),smooth((1-pb)/0.2));
+  const gx=lerp(gLeft?-W*0.3:W*1.3,gx0,e)+(bx0-gx0)*0.36*stepG,bx=lerp(gLeft?W*1.3:-W*0.3,bx0,e)+(gx0-bx0)*0.36*stepB;
+  const z=1+0.07*smooth((lt-1.3)/2.2),pvY=fy-ch*0.55;c.save();c.globalAlpha=ex;c.translate(W/2,pvY);c.scale(z,z);c.translate(-W/2,-pvY);
+  c.save();c.globalAlpha*=e;mandap(c,W/2,fy+ch*0.02,W*0.84,ch*1.05,P.accent,t);c.restore();
   const gl=c.createRadialGradient(W/2,fy-ch*0.5,0,W/2,fy-ch*0.5,ch);gl.addColorStop(0,hexA(P.accent,0.3));gl.addColorStop(1,hexA(P.accent,0));c.fillStyle=gl;c.fillRect(0,0,W,H);
-  shadowEl(c,gx,fy,ch*0.2);shadowEl(c,bx,fy,ch*0.24);const gp=lt>1.8?easeOut((lt-1.8)/0.9):0;
-  drawGroom(c,gx,fy,ch,t,Object.assign({},X.groom,{walk:wk,garland:gp,drop:(1-gp)*ch*0.35}));drawBride(c,bx,fy,ch,t,Object.assign({},X.bride,{walk:wk,garland:gp,drop:(1-gp)*ch*0.35}));
-  for(let i=0;i<8;i++){const ph=(lt*0.5+i/8)%1;heart(c,W/2+Math.sin(i*2.3+lt*2)*W*0.08,fy-ch*0.5-ph*H*0.3,14*v*(1-ph*0.5),hexA('#ff4d6d',(1-ph)*clamp(lt-1)));}c.restore();
+  shadowEl(c,gx,fy,ch*0.2);shadowEl(c,bx,fy,ch*0.24);
+  // where a garland is: held open at the giver's chest, raised over the receiver's head, lowered round the neck
+  const gar=(p,giver,recv,neck,top)=>{const A={x:giver,y:fy-ch*0.47,w:ch*0.1,s:ch*0.12},B={x:recv,y:top,w:ch*0.14,s:ch*0.13},N={x:recv,y:neck,w:ch*0.115,s:ch*0.2};
+   let a=A,b=B,u=smooth(p/0.35);if(p>=0.35&&p<0.5){a=B;u=0;}else if(p>=0.5){a=B;b=N;u=smooth((p-0.5)/0.25);}return{x:lerp(a.x,b.x,u),y:lerp(a.y,b.y,u),w:lerp(a.w,b.w,u),s:lerp(a.s,b.s,u)};};
+  const G=gar(pg,gx,bx,fy-ch*0.61,fy-ch*0.93),B=gar(pb,bx,gx,fy-ch*0.63,fy-ch*0.99);
+  const kG=hold*(pg<0.76?1:1-smooth((pg-0.76)/0.2)),kB=hold*(pb<0.76?1:1-smooth((pb-0.76)/0.2));
+  const gO=Object.assign({},X.groom,{walk:wk,out:{},reach:{L:[G.x-G.w,G.y],R:[G.x+G.w,G.y],k:kG},lift:0.035*bump(pg,0.2,0.75,0.12),bow:0.5*bump(pb,0.3,0.8,0.15),garland:pb>=0.76?1:0});
+  const bO=Object.assign({},X.bride,{walk:wk,out:{},reach:{L:[B.x-B.w,B.y],R:[B.x+B.w,B.y],k:kB},lift:0.035*bump(pb,0.2,0.75,0.12),bow:0.5*bump(pg,0.3,0.8,0.15),garland:pg>=0.76?1:0});
+  // whoever is giving is drawn in front, so their arms reach round the other
+  if(pg>=0&&pg<1){drawBride(c,bx,fy,ch,t,bO);drawGroom(c,gx,fy,ch,t,gO);}else{drawGroom(c,gx,fy,ch,t,gO);drawBride(c,bx,fy,ch,t,bO);}
+  if(pg<0.76)heldGarland(c,gO.out.L,gO.out.R,G.s,ch,hold);if(pb<0.76)heldGarland(c,bO.out.L,bO.out.R,B.s,ch,hold);
+  burst(c,bx,fy-ch*0.56,(lt-tg)/1.3,v,5);burst(c,gx,fy-ch*0.58,(lt-tb)/1.3,v,9);
+  for(let i=0;i<8;i++){const ph=(lt*0.5+i/8)%1;heart(c,W/2+Math.sin(i*2.3+lt*2)*W*0.08,fy-ch*0.5-ph*H*0.3,14*v*(1-ph*0.5),hexA('#ff4d6d',(1-ph)*clamp(lt-t2-0.4)));}c.restore();
+  if(lt>t1){c.save();c.globalAlpha*=smooth((lt-t1)/0.8)*ex;petals(c,W,H,t,77,['#ff8fab','#ffd166','#e63946','#ffffff'],26);c.restore();}
+  vtext(c,L.varmala,W/2,H*0.355,24*v,F.head,P.accent,{a:Math.min(smooth((lt-1.6)/0.6),clamp((t2+1.2-lt)/0.6)),ls:0.24,upper:true,role:'head',weight:700});
   const[a,b]=names(d),nw={role:'name',weight:F.nameWeight||400,style:F.nameStyle,shadow:'rgba(0,0,0,.2)'};
   vtext(c,a,W/2,H*0.1,84*v,F.name,P.ink,Object.assign({a:fade(lt,dur,0.3).a},nw));vtext(c,d.connector,W/2,H*0.17,44*v,F.name,P.accent,Object.assign({},nw,{a:fade(lt,dur,0.6).a}));
   vtext(c,b,W/2,H*0.24,84*v,F.name,P.ink,Object.assign({a:fade(lt,dur,0.9).a},nw));vtext(c,(LBL[d.lang]||LBL.en).married,W/2,H*0.31,30*v,F.body,P.text,{a:fade(lt,dur,1.4).a,style:'italic'});},
@@ -661,11 +717,27 @@ const SC={
   vtext(c,fmtDate(d.date,d.lang,'weekday'),W/2,cy+cht*0.87,30*v,F.body,P.cardText,{a:f.a,weight:600,maxW:cw*0.9});vtext(c,fmtTime(d.time,d.lang),W/2,H*0.52,36*v,F.body,P.text,{a:fade(lt,dur,0.9).a,weight:700});
   const pf=fade(lt,dur,1.3),py=H*0.63-Math.abs(Math.sin(t*3))*12*v;c.save();c.globalAlpha=pf.a;c.fillStyle='#e63946';c.beginPath();c.arc(W/2,py,22*v,Math.PI,0);c.lineTo(W/2,py+44*v);c.closePath();c.fill();c.fillStyle='#fff';c.beginPath();c.arc(W/2,py,8*v,0,TAU);c.fill();c.restore();
   vtext(c,L.venue,W/2,H*0.71,26*v,F.head,P.accent,{a:pf.a,ls:0.14,role:'head',weight:600});vtext(c,d.venue,W/2,H*0.77,46*v,F.body,P.text,{a:fade(lt,dur,1.5).a,weight:700,wrap:true,maxLines:2});vtext(c,d.address,W/2,H*0.85,30*v,F.body,P.soft,{a:fade(lt,dur,1.7).a,wrap:true,maxLines:2});},
- outro(c,W,H,t,lt,dur,X,d,v){const T=X.T,P=T.pal,F=T.fonts,fy=H*0.95,ch=H*0.4,e=easeOut(lt/1),gF=d.order==='bride'?0.62:0.38;c.save();c.globalAlpha=e;shadowEl(c,W*gF,fy,ch*0.2);shadowEl(c,W*(1-gF),fy,ch*0.24);
-  drawGroom(c,W*gF,fy,ch,t,Object.assign({},X.groom,{garland:1,wave:lt>1.2&&lt<4}));drawBride(c,W*(1-gF),fy,ch,t,Object.assign({},X.bride,{garland:1,hold:true}));c.restore();
-  vtext(c,d.closing,W/2,H*0.1,34*v,F.body,P.text,{a:fade(lt,dur,0.3).a,style:'italic',wrap:true,maxLines:3,weight:600});const[a,b]=names(d);
-  vtext(c,`${a||''} & ${b||''}`,W/2,H*0.22,78*v,F.name,P.ink,{a:fade(lt,dur,0.8).a,role:'name',weight:F.nameWeight||400,style:F.nameStyle,shadow:'rgba(0,0,0,.2)'});
-  vtext(c,d.invitedBy,W/2,H*0.3,28*v,F.body,P.text,{a:fade(lt,dur,1.2).a,weight:700,wrap:true,maxLines:2});vtext(c,d.rsvp,W/2,H*0.36,26*v,F.body,P.soft,{a:fade(lt,dur,1.5).a,weight:600});vtext(c,d.hashtag,W/2,H*0.41,30*v,F.head,P.accent,{a:fade(lt,dur,1.8).a,role:'head',weight:700});}
+ countdown(c,W,H,t,lt,dur,X,d,v){const T=X.T,P=T.pal,F=T.fonts,L=LBL[d.lang]||LBL.en,n=Math.max(1,daysLeft(d.date)),f=fade(lt,dur,0.1,0.7),p=easeOut(clamp((lt-0.3)/2)),cx=W/2,cy=H*0.46,R=W*0.29;
+  vtext(c,L.countTitle,W/2,H*0.2,38*v,F.head,P.accent,{a:f.a,ls:0.12,role:'head',weight:700,maxW:W*0.86});
+  c.save();c.globalAlpha*=f.a;c.lineCap='round';c.lineWidth=16*v;c.strokeStyle=hexA(P.accent,0.2);c.beginPath();c.arc(cx,cy,R,0,TAU);c.stroke();
+  c.strokeStyle=P.accent;c.beginPath();c.arc(cx,cy,R,-Math.PI/2,-Math.PI/2+TAU*p);c.stroke();c.fillStyle=P.ink;
+  for(let k=0;k<60;k++){const a=k/60*TAU-Math.PI/2,r2=R+(k%5?22:28)*v;c.globalAlpha=f.a*(k/60<=p?0.9:0.25);c.beginPath();c.arc(cx+Math.cos(a)*r2,cy+Math.sin(a)*r2,(k%5?2:3.5)*v,0,TAU);c.fill();}
+  c.globalAlpha=f.a;const a0=-Math.PI/2+TAU*p;marigold(c,cx+Math.cos(a0)*R,cy+Math.sin(a0)*R,16*v);for(let k=0;k<6;k++){const a=k/6*TAU+t;sparkle(c,cx+Math.cos(a)*R*1.25,cy+Math.sin(a)*R*1.25,(8+4*Math.sin(t*3+k))*v,hexA(P.accent,0.8));}c.restore();
+  vtext(c,String(Math.round(lerp(n+Math.min(99,Math.max(20,n)),n,p))),cx,cy-10*v,150*v,F.head,P.ink,{a:f.a,role:'head',weight:700,maxW:R*1.6});
+  vtext(c,n===1?L.dayToGo:L.daysToGo,cx,cy+R*0.5,30*v,F.body,P.text,{a:f.a,weight:600});
+  vtext(c,fmtDate(d.date,d.lang,'long'),W/2,H*0.76,32*v,F.head,P.text,{a:fade(lt,dur,1).a,role:'head',weight:600,maxW:W*0.9});
+  vtext(c,L.countLine,W/2,H*0.83,26*v,F.body,P.soft,{a:fade(lt,dur,1.4).a,style:'italic',weight:600,wrap:true,maxLines:2,maxW:W*0.84});},
+ // Namaste: both join their palms and bow to invite the guests, first deeply, then once more gently.
+ outro(c,W,H,t,lt,dur,X,d,v){const T=X.T,P=T.pal,F=T.fonts,L=LBL[d.lang]||LBL.en,fy=H*0.95,ch=H*0.4,e=easeOut(lt/1),gF=d.order==='bride'?0.62:0.38,nm=smooth((lt-0.5)/0.6),bw=bump(lt,1.4,3.1,0.6)+0.6*bump(lt,4.1,5.4,0.45);
+  c.save();c.globalAlpha=e;const gl=c.createRadialGradient(W/2,fy-ch*0.55,0,W/2,fy-ch*0.55,ch*0.9);gl.addColorStop(0,hexA(P.accent,0.28));gl.addColorStop(1,hexA(P.accent,0));c.fillStyle=gl;c.fillRect(0,0,W,H);
+  shadowEl(c,W*gF,fy,ch*0.2);shadowEl(c,W*(1-gF),fy,ch*0.24);
+  drawGroom(c,W*gF,fy,ch,t,Object.assign({},X.groom,{garland:1,namaste:nm,bow:bw}));drawBride(c,W*(1-gF),fy,ch,t,Object.assign({},X.bride,{garland:1,namaste:nm,bow:bw}));
+  for(const x of[W*0.12,W*0.88])diya(c,x,fy+4*v,34*v,t);c.restore();const[a,b]=names(d);
+  if(d.guest)vtext(c,`${L.dear} ${d.guest},`,W/2,H*0.09,30*v,F.body,P.text,{a:fade(lt,dur,0.2).a,style:'italic',weight:600,maxW:W*0.84});
+  vtext(c,L.invite,W/2,H*(d.guest?0.14:0.1),32*v,F.head,P.accent,{a:fade(lt,dur,0.7).a,role:'head',weight:700,wrap:true,maxLines:2,maxW:W*0.86});
+  vtext(c,`${a||''} & ${b||''}`,W/2,H*0.215,76*v,F.name,P.ink,{a:fade(lt,dur,1).a,role:'name',weight:F.nameWeight||400,style:F.nameStyle,shadow:'rgba(0,0,0,.2)'});
+  vtext(c,d.closing,W/2,H*0.29,26*v,F.body,P.text,{a:fade(lt,dur,1.4).a,style:'italic',wrap:true,maxLines:2,weight:600});
+  vtext(c,d.invitedBy,W/2,H*0.355,26*v,F.body,P.text,{a:fade(lt,dur,1.7).a,weight:700,wrap:true,maxLines:2});vtext(c,d.rsvp,W/2,H*0.405,24*v,F.body,P.soft,{a:fade(lt,dur,2).a,weight:600});vtext(c,d.hashtag,W/2,H*0.45,28*v,F.head,P.accent,{a:fade(lt,dur,2.2).a,role:'head',weight:700});}
 };
 function person(c,W,H,t,lt,dur,X,d,v,kind){const T=X.T,P=T.pal,F=T.fonts,L=LBL[d.lang]||LBL.en,isG=kind==='groom',dir=isG?-1:1,e=easeOut(lt/1.4),x=lerp(W/2+dir*W*0.75,W/2,e),fy=H*0.93,ch=H*0.5;
   c.save();c.globalAlpha=clamp((dur-lt)/0.5);const g=c.createRadialGradient(W/2,fy-ch*0.5,0,W/2,fy-ch*0.5,ch*0.85);g.addColorStop(0,hexA(P.accent,0.35*e));g.addColorStop(1,hexA(P.accent,0));c.fillStyle=g;c.fillRect(0,0,W,H);shadowEl(c,x,fy,ch*0.22);
@@ -726,7 +798,7 @@ const BLESS=[['॥ श्री गणेशाय नमः ॥','Shri Ganeshay
 const DEF=Object.assign({lang:'en',groom:'Aarav',bride:'Ananya',order:'groom',date:'2026-12-12',time:'19:00',venue:'The Royal Palace Lawns',address:'Jaipur, Rajasthan',hashtag:'#AaravWedsAnanya',
  events:[{name:'Haldi',date:'2026-12-10',time:'10:00',venue:''},{name:'Mehendi',date:'2026-12-10',time:'16:00',venue:''},{name:'Sangeet',date:'2026-12-11',time:'19:30',venue:''},{name:'Shubh Vivah',date:'2026-12-12',time:'19:00',venue:''},{name:'Reception',date:'2026-12-13',time:'19:30',venue:''}],
  tpl:'royal-maroon',type:'invite',size:'portrait',nameFont:'auto',colors:{ink:'',accent:'',text:''},photo:null,showPhoto:true,showEvents:true,
- vtpl:'royal',faces:{groom:null,bride:null},gCol:'',bCol:'',turban:'auto',music:'shehnai',vol:0.8,quality:'720',vEvents:true},EN);
+ vtpl:'royal',faces:{groom:null,bride:null},gCol:'',bCol:'',turban:'auto',music:'shehnai',vol:0.8,quality:'720',vEvents:true,vCount:true,guest:''},EN);
 let S=(()=>{let s=null;try{s=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){}const d=JSON.parse(JSON.stringify(DEF));if(s&&typeof s==='object'){for(const k in d)if(s[k]!==undefined)d[k]=s[k];d.colors=Object.assign({ink:'',accent:'',text:''},s.colors||{});d.faces=Object.assign({groom:null,bride:null},s.faces||{});}return d;})();
 let saveT=0;function persist(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){try{localStorage.setItem(KEY,JSON.stringify(Object.assign({},S,{photo:null})));}catch(e2){}}},500);}
 let PHOTO=null;const FACE={groom:null,bride:null},ORIG={groom:null,bride:null},SKIN={groom:'#d9a07a',bride:'#e2ab86'},PH={groom:cartoonFace('groom'),bride:cartoonFace('bride')};
@@ -795,7 +867,7 @@ function ctxFor(T){return Object.assign({T,TL:buildTimeline(S,S),title:S.title},
 function refreshV(){X=ctxFor(vtOf());const s=$('#seek');s.max=X.TL.total.toFixed(2);if(Pl.t>X.TL.total)Pl.t=0;if(!Pl.on&&!recording)vDraw(Pl.t);clearTimeout(refreshV.h);refreshV.h=setTimeout(vThumbs,500);}
 function vDraw(t){const cv=$('#vidCv');drawVideoFrame(cv.getContext('2d'),cv.width,cv.height,Math.min(t,X.TL.total-0.001),X,S);$('#seek').value=t;$('#tLbl').textContent=`${mmss(t)} / ${mmss(X.TL.total)}`;}
 const mmss=t=>`${Math.floor(t/60)}:${String(Math.floor(t%60)).padStart(2,'0')}`;
-function vThumbs(){$$('#vgal .tpl').forEach(b=>{const T=VID_T.find(x=>x.id===b.dataset.id),x=ctxFor(T),cv=b.querySelector('canvas');cv.width=162;cv.height=288;const sc=x.TL.scenes.find(s=>s.id==='couple');drawVideoFrame(cv.getContext('2d'),162,288,sc.t0+3.4,x,S);});}
+function vThumbs(){$$('#vgal .tpl').forEach(b=>{const T=VID_T.find(x=>x.id===b.dataset.id),x=ctxFor(T),cv=b.querySelector('canvas');cv.width=162;cv.height=288;const sc=x.TL.scenes.find(s=>s.id==='couple');drawVideoFrame(cv.getContext('2d'),162,288,sc.t0+7.2,x,S);});}
 function play(){if(Pl.on||recording)return;if(Pl.t>=X.TL.total-0.05)Pl.t=0;Pl.on=true;$('#playBtn').textContent='❚❚';$('#playBtn').setAttribute('aria-label','Pause preview');Music.start(S.music,Pl.t,X.TL.total,S.vol);Pl.last=performance.now();
   const step=now=>{if(!Pl.on)return;Pl.t+=(now-Pl.last)/1000;Pl.last=now;if(Pl.t>=X.TL.total){Pl.t=X.TL.total;vDraw(Pl.t);pause();return;}vDraw(Pl.t);Pl.raf=requestAnimationFrame(step);};Pl.raf=requestAnimationFrame(step);}
 function pause(){Pl.on=false;cancelAnimationFrame(Pl.raf);Music.stop();$('#playBtn').textContent='▶';$('#playBtn').setAttribute('aria-label','Play preview');}
@@ -810,9 +882,9 @@ function buildVideoUI(){VID_T.forEach(T=>{const b=document.createElement('button
   $('#resetOut').onclick=()=>{S.gCol='';S.bCol='';S.turban='auto';syncVid();refreshV();persist();};
   $('#music').onchange=e=>{if(e.target.value==='own'&&!gate('song')){e.target.value=S.music;return;}S.music=e.target.value;syncVid();persist();if(Pl.on)Music.start(S.music,Pl.t,X.TL.total,S.vol);};$('#vol').oninput=e=>{S.vol=+e.target.value;persist();if(Music.master&&Music.actx)Music.master.gain.setTargetAtTime(S.vol,Music.actx.currentTime,0.05);};
   $('#songIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const a=Music.ctx();if(!a)return toast('Audio is not supported in this browser.');try{Music.buffer=await a.decodeAudioData(await f.arrayBuffer());$('#songName').textContent=f.name;toast('Song ready');}catch(err){toast('That song could not be read. Try an MP3 or M4A file.');}};
-  $('#quality').onchange=e=>{if(e.target.value==='720'&&!gate('hd')){e.target.value='540';return;}S.quality=e.target.value;persist();};$('#vEvents').onchange=e=>{S.vEvents=e.target.checked;refreshV();persist();};
+  $('#quality').onchange=e=>{if(e.target.value==='720'&&!gate('hd')){e.target.value='540';return;}S.quality=e.target.value;persist();};$('#vEvents').onchange=e=>{S.vEvents=e.target.checked;refreshV();persist();};$('#vCount').onchange=e=>{S.vCount=e.target.checked;refreshV();persist();};
   $('#mkVid').onclick=record;$('#stopRec').onclick=()=>{recStop=true;};$('#dlVid').onclick=()=>lastVid&&saveBlob(lastVid.blob,lastVid.name);$('#shVid').onclick=()=>lastVid&&shareBlob(lastVid.blob,lastVid.name);}
-function syncVid(){$$('#vgal .tpl').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===S.vtpl?'true':'false'));const T=vtOf();$('#gCol').value=S.gCol||T.groom.coat;$('#bCol').value=S.bCol||T.bride.skirt;$('#turban').value=S.turban;$('#music').value=S.music;$('#vol').value=S.vol;$('#quality').value=isPro()?S.quality:'540';$('#vEvents').checked=!!S.vEvents;$('#songRow').hidden=S.music!=='own';}
+function syncVid(){$$('#vgal .tpl').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===S.vtpl?'true':'false'));const T=vtOf();$('#gCol').value=S.gCol||T.groom.coat;$('#bCol').value=S.bCol||T.bride.skirt;$('#turban').value=S.turban;$('#music').value=S.music;$('#vol').value=S.vol;$('#quality').value=isPro()?S.quality:'540';$('#vEvents').checked=!!S.vEvents;$('#vCount').checked=S.vCount!==false;$('#songRow').hidden=S.music!=='own';}
 
 /* ---------- face cropper ---------- */
 const Crop={kind:null,img:null,x:0,y:0,base:1,z:1,rot:0,pts:new Map(),d0:0,z0:1,
@@ -845,7 +917,7 @@ async function record(){const cv=$('#vidCv');if(!window.MediaRecorder||!cv.captu
   await new Promise(r=>setTimeout(r,150));rec.stop();await stopped;Music.stop();stream.getTracks().forEach(t=>t.stop());recording=false;cv.width=540;cv.height=960;Pl.t=0;vDraw(0);
   $('#mkVid').disabled=false;$('#stopRec').hidden=true;$('#recBox').hidden=true;$('#playBtn').disabled=false;$('#seek').disabled=false;
   if(recStop){toast('Recording stopped');return;}const type=(rec.mimeType||mime||'video/webm').split(';')[0],ext=type.includes('mp4')?'mp4':'webm',blob=new Blob(chunks,{type});
-  lastVid={blob,name:`${slug(S.groom)}-weds-${slug(S.bride)}.${ext}`};const v=$('#resVid');if(v.src)URL.revokeObjectURL(v.src);v.src=URL.createObjectURL(blob);$('#resBox').hidden=false;$('#shVid').hidden=!navigator.canShare;
+  lastVid={blob,name:`${slug(S.groom)}-weds-${slug(S.bride)}${S.guest&&S.guest.trim()?'-for-'+slug(S.guest):''}.${ext}`};const v=$('#resVid');if(v.src)URL.revokeObjectURL(v.src);v.src=URL.createObjectURL(blob);$('#resBox').hidden=false;$('#shVid').hidden=!navigator.canShare;
   $('#resNote').textContent=ext==='webm'?'This browser saves videos as WebM. If WhatsApp does not accept it, record again in Chrome (recent version) or Safari to get MP4.':'MP4 video, ready for WhatsApp and Instagram.';toast('Your video is ready');}
 
 /* ---------- account & Pro (same model as PakkaBill) ----------
