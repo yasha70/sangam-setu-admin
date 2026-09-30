@@ -62,6 +62,10 @@ A festive wedding look: warm ivory `#FFF5E8` covered in colourful line doodles o
 - The video (about 50 seconds, 9:16): the intro writes the title out by hand; the groom and the bride each walk in; the **varmala** under a mandap, where the bride lifts her garland over the groom's head and places it round his neck, then he does the same for her (the one receiving bows their head, and petals burst as each garland lands); the functions; a **countdown** of days left to the wedding (from the day the video is made); the date and venue; and a closing **namaste**, both with palms joined, bowing to invite the guests. A **guest name** (Video → Personal invite) greets that family by name at the start and the end, and goes into the file name, so one video can be made per family.
 - `qrcode.js` QR code generator (qrcode-generator 1.4.4, MIT) for the UPI QR.
 
+### Accounts
+
+Downloading anything (card image, PDF, share, making or downloading the video) needs an account. Logged out, those buttons open a Log in / Create account dialog (mobile number and password, no OTP yet) and the download carries on as soon as the person is signed in. Designing and previewing stay open to everyone. Accounts need the Upstash database connected to the project; if the server can't be reached the dialog says sign-in is not available. The check runs in the browser, since the files are made on the device.
+
 ### Plans
 
 | | Free | Pro (monthly or yearly) |

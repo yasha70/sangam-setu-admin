@@ -215,7 +215,7 @@ code{font:500 13px ui-monospace,Menlo,monospace;background:var(--surface2);paddi
 </section>
 <section id="p-card"><div class="phead"><h1>Invitation card</h1><p class="lede">Pick a design, then download the card as an image or a print-ready PDF.</p></div><div class="editor">
  <div class="stage-col"><div class="stage"><canvas id="cardCv" aria-label="Invitation card preview"></canvas></div>
-  <div class="actions" id="cardActs"><button class="btn" id="dlPng" type="button">Download image</button><button class="btn ghost" id="dlPdf" type="button">Download PDF</button><button class="btn ghost" id="shCard" type="button" hidden>Share</button></div></div>
+  <div class="actions" id="cardActs"><button class="btn" id="dlPng" type="button">Download image</button><button class="btn ghost" id="dlPdf" type="button">Download PDF</button><button class="btn ghost" id="shCard" type="button" hidden>Share</button></div><p class="hint dlhint" style="text-align:center">A free account is needed to download. No OTP.</p></div>
  <div class="controls">
   <div class="block"><h2>Templates</h2><div class="chips" id="cats"></div><div class="gallery" id="gal"></div></div>
   <div class="block"><h2>Card type</h2><div class="seg" id="typeSeg"><button type="button" data-v="invite">Wedding invite</button><button type="button" data-v="save">Save the date</button><button type="button" data-v="events">Function schedule</button></div>
@@ -229,7 +229,7 @@ code{font:500 13px ui-monospace,Menlo,monospace;background:var(--surface2);paddi
 <section id="p-video" hidden><div class="phead"><h1>Invitation video</h1><p class="lede">A 40-second animated invite with your names, dates and music, ready for WhatsApp.</p></div><div class="editor">
  <div class="stage-col"><div class="stage vid"><canvas id="vidCv" width="540" height="960" aria-label="Video preview"></canvas></div>
   <div class="player"><button class="btn round" id="playBtn" type="button" aria-label="Play preview">▶</button><input type="range" id="seek" min="0" max="40" step="0.01" value="0" aria-label="Preview position"><span class="time" id="tLbl">0:00 / 0:40</span></div>
-  <div class="actions"><button class="btn" id="mkVid" type="button">Create video</button><button class="btn ghost" id="stopRec" type="button" hidden>Stop</button></div>
+  <div class="actions"><button class="btn" id="mkVid" type="button">Create video</button><button class="btn ghost" id="stopRec" type="button" hidden>Stop</button></div><p class="hint dlhint" style="text-align:center">A free account is needed to make and download the video. No OTP.</p>
   <div id="recBox" hidden><div class="bar"><span id="recBar"></span></div><p class="hint" id="recMsg">Recording in real time. Keep this screen open until it finishes.</p></div>
   <div class="result" id="resBox" hidden><video id="resVid" controls playsinline></video><div class="actions"><button class="btn" id="dlVid" type="button">Download video</button><button class="btn ghost" id="shVid" type="button" hidden>Share</button></div><p class="hint" id="resNote"></p></div></div>
  <div class="controls">
@@ -821,7 +821,7 @@ function buildCardUI(){const cats=['All',...new Set(CARD_T.map(t=>t.cat))],cw=$(
   $('#showEvents').onchange=e=>{S.showEvents=e.target.checked;renderCard();persist();};$('#showPhoto').onchange=e=>{S.showPhoto=e.target.checked;renderCard();persist();};
   $('#photoIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const im=await fileImg(f),k=Math.min(1,1400/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);S.photo=cv.toDataURL('image/jpeg',0.88);PHOTO=await loadImg(S.photo);S.showPhoto=true;syncCard();renderCard();persist();toast('Photo added');}catch(err){toast('That file could not be opened as a photo. Try a JPG or PNG.');}};
   $('#photoDel').onclick=()=>{S.photo=null;PHOTO=null;syncCard();renderCard();persist();};
-  $('#dlPng').onclick=()=>exportCard('png');$('#dlPdf').onclick=()=>exportCard('pdf');$('#shCard').onclick=async()=>{if(proCard(S.tpl)&&!gate('tpl'))return;const b=await cardBlob();shareBlob(b,fname('png'));};}
+  $('#dlPng').onclick=()=>exportCard('png');$('#dlPdf').onclick=()=>exportCard('pdf');$('#shCard').onclick=async()=>{if(!needLogin(()=>toast('You are logged in. Tap Share again.')))return;if(proCard(S.tpl)&&!gate('tpl'))return;const b=await cardBlob();shareBlob(b,fname('png'));};}
 function syncCard(){$$('#gal .tpl').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===S.tpl?'true':'false'));$$('#typeSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.type?'true':'false'));$$('#sizeSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===S.size?'true':'false'));
   const P=tplOf().pal;$('#colInk').value=S.colors.ink||P.ink;$('#colAccent').value=S.colors.accent||P.accent;$('#colText').value=S.colors.text||P.text;$('#nameFont').value=S.nameFont;$('#showEvents').checked=!!S.showEvents;$('#showPhoto').checked=!!S.showPhoto;$('#photoDel').hidden=!S.photo;}
 function slug(s){return String(s||'').trim().replace(/\s+/g,'-').replace(/[^\p{L}\p{N}\p{M}-]/gu,'')||'wedding';}
@@ -829,7 +829,7 @@ function fname(ext){return`${slug(S.groom)}-${slug(S.bride)}-${S.type==='save'?'
 function fullCard(){const[W,H]=SIZES[S.size],cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d');drawCard(c,W,H,tplOf(),S,PHOTO);if(!isPro())drawMark(c,W,H);return cv;}
 const cardBlob=()=>new Promise(r=>fullCard().toBlob(r,'image/png'));
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
-async function exportCard(kind){if(proCard(S.tpl)&&!gate('tpl'))return;if(kind==='pdf'&&!gate('pdf'))return;try{if(kind==='png'){await saveBlob(await cardBlob(),fname('png'));return;}
+async function exportCard(kind){if(!needLogin(()=>exportCard(kind)))return;if(proCard(S.tpl)&&!gate('tpl'))return;if(kind==='pdf'&&!gate('pdf'))return;try{if(kind==='png'){await saveBlob(await cardBlob(),fname('png'));return;}
   if(!window.jspdf)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');const[W,H]=SIZES[S.size],iw=S.size==='portrait'?5:S.size==='square'?6:4.5,ih=iw*H/W;
   const pdf=new window.jspdf.jsPDF({orientation:'portrait',unit:'in',format:[iw,ih]});pdf.addImage(fullCard().toDataURL('image/jpeg',0.95),'JPEG',0,0,iw,ih);await saveBlob(pdf.output('blob'),fname('pdf'));}
  catch(e){toast(kind==='pdf'?'PDF could not be made here. Download the image instead.':'Could not create the image.');}}
@@ -883,7 +883,7 @@ function buildVideoUI(){VID_T.forEach(T=>{const b=document.createElement('button
   $('#music').onchange=e=>{if(e.target.value==='own'&&!gate('song')){e.target.value=S.music;return;}S.music=e.target.value;syncVid();persist();if(Pl.on)Music.start(S.music,Pl.t,X.TL.total,S.vol);};$('#vol').oninput=e=>{S.vol=+e.target.value;persist();if(Music.master&&Music.actx)Music.master.gain.setTargetAtTime(S.vol,Music.actx.currentTime,0.05);};
   $('#songIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const a=Music.ctx();if(!a)return toast('Audio is not supported in this browser.');try{Music.buffer=await a.decodeAudioData(await f.arrayBuffer());$('#songName').textContent=f.name;toast('Song ready');}catch(err){toast('That song could not be read. Try an MP3 or M4A file.');}};
   $('#quality').onchange=e=>{if(e.target.value==='720'&&!gate('hd')){e.target.value='540';return;}S.quality=e.target.value;persist();};$('#vEvents').onchange=e=>{S.vEvents=e.target.checked;refreshV();persist();};$('#vCount').onchange=e=>{S.vCount=e.target.checked;refreshV();persist();};
-  $('#mkVid').onclick=record;$('#stopRec').onclick=()=>{recStop=true;};$('#dlVid').onclick=()=>lastVid&&saveBlob(lastVid.blob,lastVid.name);$('#shVid').onclick=()=>lastVid&&shareBlob(lastVid.blob,lastVid.name);}
+  $('#mkVid').onclick=record;$('#stopRec').onclick=()=>{recStop=true;};$('#dlVid').onclick=()=>{if(lastVid&&needLogin(()=>saveBlob(lastVid.blob,lastVid.name)))saveBlob(lastVid.blob,lastVid.name);};$('#shVid').onclick=()=>{if(lastVid&&needLogin(()=>toast('You are logged in. Tap Share again.')))shareBlob(lastVid.blob,lastVid.name);};}
 function syncVid(){$$('#vgal .tpl').forEach(b=>b.setAttribute('aria-pressed',b.dataset.id===S.vtpl?'true':'false'));const T=vtOf();$('#gCol').value=S.gCol||T.groom.coat;$('#bCol').value=S.bCol||T.bride.skirt;$('#turban').value=S.turban;$('#music').value=S.music;$('#vol').value=S.vol;$('#quality').value=isPro()?S.quality:'540';$('#vEvents').checked=!!S.vEvents;$('#vCount').checked=S.vCount!==false;$('#songRow').hidden=S.music!=='own';}
 
 /* ---------- face cropper ---------- */
@@ -906,7 +906,7 @@ const Crop={kind:null,img:null,x:0,y:0,base:1,z:1,rot:0,pts:new Map(),d0:0,z0:1,
 let recStop=false,lastVid=null;
 function pickMime(aud){const L=aud?['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm']:['video/mp4;codecs=avc1.42E01E','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];for(const m of L){try{if(MediaRecorder.isTypeSupported(m))return m;}catch(e){}}return'';}
 async function record(){const cv=$('#vidCv');if(!window.MediaRecorder||!cv.captureStream){toast('This browser cannot record video. Try Chrome on Android or a computer.');return;}
-  if(proVid(S.vtpl)&&!gate('vtpl'))return;if(S.music==='own'&&!gate('song'))return;const pro=isPro();
+  if(!needLogin(()=>record()))return;if(proVid(S.vtpl)&&!gate('vtpl'))return;if(S.music==='own'&&!gate('song'))return;const pro=isPro();
   pause();recording=true;recStop=false;const q=S.quality==='540'||!pro?[540,960]:[720,1280];cv.width=q[0];cv.height=q[1];const total=X.TL.total,stream=cv.captureStream(30);let dest=null;const a=Music.ctx();
   const needAudio=a&&S.music!=='none'&&!(S.music==='own'&&!Music.buffer);if(needAudio){try{if(a.state==='suspended')await a.resume();dest=a.createMediaStreamDestination();dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));}catch(e){dest=null;}}
   const mime=pickMime(!!dest);let rec;try{rec=new MediaRecorder(stream,mime?{mimeType:mime,videoBitsPerSecond:6e6}:{videoBitsPerSecond:6e6});}catch(e){rec=new MediaRecorder(stream);}
@@ -945,32 +945,22 @@ async function loadAcct(){try{ACC.cfg=await api('config');}catch(e){ACC.cfg=null
 function drawMark(c,W,H){const s=Math.min(W,H),fs=Math.max(11,s*0.024),txt='Made with VivahKala';c.save();c.font=`600 ${fs}px Poppins, sans-serif`;if('letterSpacing'in c)c.letterSpacing='0px';
   const w=c.measureText(txt).width+fs*1.6,h=fs*1.9,x=(W-w)/2,y=H-h-s*0.02;c.fillStyle='rgba(20,8,12,.55)';rr(c,x,y,w,h,h/2);c.fill();c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText(txt,W/2,y+h/2+fs*0.05);c.restore();}
 function gate(f){if(isPro())return true;openUpgrade(f);return false;}
-function planStatus(){const u=ACC.user;if(!paidOn())return{icon:'🎉',title:'Everything is free',sub:'All designs and downloads are open right now.'};
+function planStatus(){const u=ACC.user;if(!paidOn())return u?{icon:'🎉',title:'Everything is free',sub:'Logged in as '+(u.name||u.phone)+'. All designs and downloads are open.'}:{icon:'🪔',title:'Free account',sub:'Log in or create a free account to download your card and video.'};
   if(u&&u.pro)return{icon:'👑',title:u.trial?'Pro free trial':'VivahKala Pro',sub:'Until '+dateStr(u.paidUntil)};
   return{icon:'🪔',title:'Free plan',sub:u?'Upgrade for every design and clean downloads.':'Log in or create an account to go Pro.'};}
 function renderAcct(){const st=planStatus(),free=!isPro();
   $$('#gal .tpl').forEach(b=>b.querySelector('.probadge').hidden=!(free&&proCard(b.dataset.id)));$$('#vgal .tpl').forEach(b=>b.querySelector('.probadge').hidden=!(free&&proVid(b.dataset.id)));
-  const chip=$('#planChip');chip.className='pchip'+(paidOn()?(isPro()?' pro':' up'):'');chip.textContent=!paidOn()?'Plans':isPro()?'👑 Pro':'Go Pro';
-  $('#sidePlan').innerHTML=`<div style="font-size:22px">${st.icon}</div><b>${esc(st.title)}</b><span>${esc(st.sub)}</span>${paidOn()&&free?'<button class="btn small" type="button" data-up>Upgrade to Pro</button>':'<button class="btn ghost small" type="button" data-plan>'+(ACC.user?'My account':'Plans &amp; account')+'</button>'}`;
+  const chip=$('#planChip');chip.className='pchip'+(paidOn()?(isPro()?' pro':' up'):'');chip.textContent=!ACC.user?'Log in':!paidOn()?'Account':isPro()?'👑 Pro':'Go Pro';if(!ACC.user)chip.className='pchip up';
+  $('#sidePlan').innerHTML=`<div style="font-size:22px">${st.icon}</div><b>${esc(st.title)}</b><span>${esc(st.sub)}</span>${!ACC.user?'<button class="btn small" type="button" data-login>Log in / Sign up</button>':paidOn()&&free?'<button class="btn small" type="button" data-up>Upgrade to Pro</button>':'<button class="btn ghost small" type="button" data-plan>My account</button>'}`;const li=$('#sidePlan [data-login]');if(li)li.onclick=()=>openAuth(null);$$('.dlhint').forEach(h=>h.hidden=!!ACC.user);
   const up=$('#sidePlan [data-up]');if(up)up.onclick=()=>openUpgrade('');const pl=$('#sidePlan [data-plan]');if(pl)pl.onclick=()=>setTab('plan');
   if(!$('#p-plan').hidden)renderPlan(false);if($('#quality'))$('#quality').value=isPro()?S.quality:'540';}
 async function renderPlan(fetchOrders){const c=ACC.cfg,u=ACC.user,box=$('#acctBox');
   $('#planLede').textContent=paidOn()?`Free to start. Pro unlocks every design, clean downloads and HD video${c.trialDays?`, and new accounts get ${c.trialDays} day${c.trialDays>1?'s':''} of Pro free`:''}.`:'Everything in VivahKala is free right now. Accounts and Pro plans open here soon.';
-  if(!c||!c.accounts){box.innerHTML='<h2>Account</h2><p class="hint">Accounts are not open yet. You can use every feature without one, and your work is saved on this device.</p>';}
+  if(!c||!c.accounts){box.innerHTML='<h2>Account</h2><p class="hint">Sign-in is not available right now. Check your internet and try again in a minute. Your design is saved on this device.</p>';}
   else if(u){const st=planStatus();box.innerHTML=`<h2>My account</h2><div class="status"><div class="crown">${st.icon}</div><div><b>${esc(st.title)}</b><span>${esc(st.sub)}</span></div></div>
     <p class="hint">${esc(u.name||'')}${u.name?' · ':''}${esc(u.phone)}</p><div class="row"><button class="btn ghost small" type="button" id="logout">Log out</button></div>`;
     $('#logout').onclick=async()=>{try{await api('auth',{action:'logout'});}catch(e){}setToken('');ACC.user=null;ACC.orders=null;renderAcct();renderPlan(false);toast('Logged out');};}
-  else{const su=ACC.mode==='signup';box.innerHTML=`<div class="authtabs"><button type="button" data-m="login" aria-pressed="${!su}">Log in</button><button type="button" data-m="signup" aria-pressed="${su}">Create account</button></div>
-    <form class="form" id="authF">${su?'<label class="field"><span>Your name</span><input name="name" autocomplete="name" maxlength="80"></label>':''}
-    <label class="field"><span>Mobile number</span><input name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10-digit number" required></label>
-    <label class="field"><span>Password</span><input name="password" type="password" autocomplete="${su?'new-password':'current-password'}" minlength="${su?6:1}" required></label>
-    <p class="err" role="alert"></p><button class="btn" type="submit">${su?'Create account':'Log in'}</button>${su&&paidOn()&&c.trialDays?`<p class="hint">New accounts get ${c.trialDays} day${c.trialDays>1?'s':''} of Pro free.</p>`:''}</form>`;
-    $$('[data-m]',box).forEach(b=>b.onclick=()=>{ACC.mode=b.dataset.m;renderPlan(false);});
-    const f=$('#authF');f.onsubmit=async e=>{e.preventDefault();const err=$('.err',f),btn=$('button[type=submit]',f);err.textContent='';btn.disabled=true;
-      try{const d=await api('auth',{action:ACC.mode,phone:f.phone.value,password:f.password.value,name:f.name?f.name.value:''});setToken(d.token);ACC.user=d.user;ACC.orders=null;renderAcct();renderPlan(true);
-        toast(d.user.trial?'Welcome! Pro is free until '+dateStr(d.user.paidUntil):'Welcome'+(d.user.name?', '+d.user.name:'')+'!');
-        if(ACC.pending&&!isPro()){const p=ACC.pending;ACC.pending='';openPay(p);}}
-      catch(x){err.textContent=x.message;btn.disabled=false;}};}
+  else{authForm(box,()=>renderPlan(false),d=>{renderPlan(true);if(ACC.pending&&!isPro()){const p=ACC.pending;ACC.pending='';openPay(p);}});}
   const pb=$('#priceBox');const free=['6 card designs','2 video designs','Image download with a small VivahKala mark','540p video'];
   pb.innerHTML=`<div class="prices"><div class="pcard"><h3>Free</h3><div class="amt">₹0</div><ul class="perks">${free.map(x=>`<li>${x}</li>`).join('')}<li class="no">PDF, HD video and your own song</li></ul></div>
     <div class="pcard pro"><h3>👑 Pro</h3>${c&&c.enabled?`<div class="amt">${rupees(c.monthly)} <small>/ month</small></div>`:''}<ul class="perks">${Object.values(FEAT).map(x=>`<li>${x}</li>`).join('')}</ul>
@@ -979,6 +969,28 @@ async function renderPlan(fetchOrders){const c=ACC.cfg,u=ACC.user,box=$('#acctBo
   const ob=$('#ordersBox');if(!u||!paidOn()){ob.hidden=true;return;}
   if(fetchOrders||!ACC.orders){try{ACC.orders=(await api('pay')).orders;}catch(e){ACC.orders=[];}}
   const L=ACC.orders||[];ob.hidden=!L.length;ob.innerHTML='<h2>My payments</h2><ul class="orders">'+L.map(o=>`<li><span>${rupees(o.amount/100)} · ${o.plan==='yearly'?'1 year':'1 month'} · UTR ${esc(o.utr)}<br><small class="hint">${dateStr(o.createdAt)}</small></span>${o.state==='COMPLETED'?'<span class="tag ok">Approved</span>':o.state==='PENDING'?'<span class="tag wait">Checking</span>':'<span class="tag bad">Not found</span>'}</li>`).join('')+'</ul><p class="fine">A payment we could not find in our account shows "Not found". Check the number and submit it again.</p>';}
+
+// Log in / Create account form (mobile number and password, no OTP). Used on the Plan page and in the sign-in dialog.
+function authForm(box,rerender,done){const c=ACC.cfg,su=ACC.mode==='signup';box.innerHTML=`<div class="authtabs"><button type="button" data-m="login" aria-pressed="${!su}">Log in</button><button type="button" data-m="signup" aria-pressed="${su}">Create account</button></div>
+    <form class="form">${su?'<label class="field"><span>Your name</span><input name="name" autocomplete="name" maxlength="80" required></label>':''}
+    <label class="field"><span>Mobile number</span><input name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10-digit number" required></label>
+    <label class="field"><span>Password${su?' (at least 6 characters)':''}</span><input name="password" type="password" autocomplete="${su?'new-password':'current-password'}" minlength="${su?6:1}" required></label>
+    <p class="err" role="alert"></p><button class="btn" type="submit">${su?'Create account':'Log in'}</button>${su&&paidOn()&&c.trialDays?`<p class="hint">New accounts get ${c.trialDays} day${c.trialDays>1?'s':''} of Pro free.</p>`:''}</form>`;
+  $$('[data-m]',box).forEach(b=>b.onclick=()=>{ACC.mode=b.dataset.m;rerender();});
+  const f=$('form',box);f.onsubmit=async e=>{e.preventDefault();const err=$('.err',f),btn=$('button[type=submit]',f);err.textContent='';btn.disabled=true;
+    try{const d=await api('auth',{action:ACC.mode,phone:f.phone.value,password:f.password.value,name:f.name?f.name.value:''});setToken(d.token);ACC.user=d.user;ACC.orders=null;renderAcct();
+      toast(d.user.trial?'Welcome! Pro is free until '+dateStr(d.user.paidUntil):'Welcome'+(d.user.name?', '+d.user.name:'')+'!');done(d);}
+    catch(x){err.textContent=x.message;btn.disabled=false;}};}
+// Downloading needs an account. Logged out: show the sign-in dialog, then carry on with `then` once signed in.
+function needLogin(then){if(ACC.user)return true;openAuth(then);return false;}
+async function openAuth(then){const card=$('#payCard');
+  if(!(ACC.cfg&&ACC.cfg.accounts)){card.innerHTML='<p class="hint">Checking…</p>';$('#payM').hidden=false;await loadAcct();if(ACC.user){closePay();if(then)then();return;}}
+  if(!(ACC.cfg&&ACC.cfg.accounts)){card.innerHTML=`<button type="button" class="mx" aria-label="Close">×</button><h3 id="payT">Sign-in is not available</h3><p class="hint">We could not reach VivahKala accounts just now. Check your internet and try again in a minute. Your design is saved on this device.</p><div class="mact"><button class="btn" type="button" data-ok>OK</button></div>`;
+    $('.mx',card).onclick=closePay;$('[data-ok]',card).onclick=closePay;$('#payM').hidden=false;return;}
+  if(!ACC.authOpened){ACC.mode='signup';ACC.authOpened=true;}
+  const draw=()=>{card.innerHTML=`<button type="button" class="mx" aria-label="Close">×</button><h3 id="payT">${ACC.mode==='signup'?'Create a free account to download':'Log in to download'}</h3><p class="hint">Your mobile number and a password, that's all. No OTP.</p><div id="authBox" style="margin-top:12px"></div>`;
+    $('.mx',card).onclick=closePay;authForm($('#authBox'),draw,()=>{closePay();if(then)then();});setTimeout(()=>{const i=$('#authBox input');if(i)i.focus();},50);};
+  draw();$('#payM').hidden=false;}
 function planButtons(){const c=ACC.cfg,off=c.monthly*12>c.yearly?Math.round(100-c.yearly/(c.monthly*12)*100):0;
   return`<div class="planbtns"><button class="btn" type="button" data-buy="yearly"><span>Yearly · ${rupees(c.yearly)}</span>${off>0?`<span class="save">Save ${off}%</span>`:''}</button><button class="btn ghost" type="button" data-buy="monthly"><span>Monthly · ${rupees(c.monthly)}</span></button></div>`;}
 function closePay(){$('#payM').hidden=true;$('#payCard').innerHTML='';}
