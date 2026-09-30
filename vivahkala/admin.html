@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>VivahKala Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Yatra+One&display=swap">
+<style>
+:root{--bg:#fff6f4;--surface:#fff;--surface2:#fbece8;--text:#2a1418;--muted:#7d5c61;--line:#efd9d4;--brand:#b0123b;--on-brand:#fff;--ok:#1d6b37;--okbg:#dcf3e3;--wait:#7a5200;--waitbg:#fff0cc;--bad:#8a1c1c;--badbg:#fde0e0;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a0c11;--surface:#261219;--surface2:#321a22;--text:#fbecef;--muted:#c7a5ad;--line:#43252f;--brand:#ff4f7b;--on-brand:#1a0c11;--okbg:#173d24;--ok:#9fe0b4;--waitbg:#4a3710;--wait:#ffd98a;--badbg:#4a1a1a;--bad:#ffb3b3;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1a0c11;--surface:#261219;--surface2:#321a22;--text:#fbecef;--muted:#c7a5ad;--line:#43252f;--brand:#ff4f7b;--on-brand:#1a0c11;--okbg:#173d24;--ok:#9fe0b4;--waitbg:#4a3710;--wait:#ffd98a;--badbg:#4a1a1a;--bad:#ffb3b3;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Poppins,system-ui,sans-serif}
+[hidden]{display:none!important}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:5}
+header b{font:400 20px 'Yatra One',serif;color:var(--brand)}
+main{max-width:1080px;margin:0 auto;padding:16px}
+h2{font:400 20px 'Yatra One',serif;margin:0 0 12px}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px}
+.tabs button{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:8px 16px;font:600 14px Poppins,sans-serif;cursor:pointer;white-space:nowrap;min-height:40px}
+.tabs button[aria-current="page"]{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.stat span{display:block;font-size:13px;color:var(--muted)}.stat b{font-size:24px}
+.chart{display:flex;align-items:flex-end;gap:10px;height:140px;padding-top:10px}
+.chart div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;font-size:12px;color:var(--muted)}
+.chart i{display:block;width:100%;max-width:48px;background:var(--brand);border-radius:6px 6px 0 0;min-height:2px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600}
+.scroll{overflow-x:auto}
+.btn{appearance:none;border:0;background:var(--brand);color:var(--on-brand);font:600 14px Poppins,sans-serif;padding:9px 14px;border-radius:10px;cursor:pointer;min-height:40px}
+a.btn{text-decoration:none;display:inline-flex;align-items:center}
+.btn.ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
+.btn.sm{font-size:12px;padding:5px 10px;min-height:32px}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select{font:15px Poppins,sans-serif;color:var(--text);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-height:42px}
+label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.grid{display:grid;gap:12px}@media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
+.tag{font:600 12px Poppins,sans-serif;border-radius:999px;padding:2px 9px;background:var(--surface2);white-space:nowrap}
+.tag.ok{background:var(--okbg);color:var(--ok)}.tag.wait{background:var(--waitbg);color:var(--wait)}.tag.bad{background:var(--badbg);color:var(--bad)}
+.muted{color:var(--muted);font-size:13px}
+.err{color:#c0262d;font-size:13px;min-height:1em;margin:6px 0}
+.login{max-width:360px;margin:12vh auto;padding:0 16px}
+.notice{padding:12px 14px;border-radius:12px;background:var(--waitbg);color:var(--wait);margin-bottom:14px;font-size:14px}
+code{font:13px ui-monospace,Menlo,monospace}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="login" id="loginV">
+  <h2>VivahKala admin</h2>
+  <form id="loginF" class="card" style="display:grid;gap:12px">
+    <label>Admin password<input type="password" name="pw" autocomplete="current-password" required></label>
+    <p class="err" id="loginErr" role="alert"></p>
+    <button class="btn" type="submit">Log in</button>
+  </form>
+</div>
+<div id="appV" hidden>
+<header><b>VivahKala admin</b><div class="row"><a class="btn ghost sm" href="/">Open app</a><button class="btn ghost sm" id="logout" type="button">Log out</button></div></header>
+<main>
+  <nav class="tabs" aria-label="Admin sections"><button data-v="overview" aria-current="page">Overview</button><button data-v="payments">Payments</button><button data-v="customers">Customers</button><button data-v="settings">Settings</button></nav>
+  <section id="v-overview"></section>
+  <section id="v-payments" hidden></section>
+  <section id="v-customers" hidden></section>
+  <section id="v-settings" hidden></section>
+</main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rupees=n=>'₹'+Number(n||0).toLocaleString('en-IN');
+const when=t=>t?new Date(t).toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}):'–';
+const day=t=>t?new Date(t).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'–';
+let TOKEN='';try{TOKEN=sessionStorage.getItem('vk-admin')||'';}catch(e){}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),2800);}
+async function call(action,data){const r=await fetch('/api/admin',{method:'POST',headers:{'Content-Type':'application/json',...(TOKEN?{Authorization:'Bearer '+TOKEN}:{})},body:JSON.stringify({action,...(data||{})})});
+  let d={};try{d=await r.json();}catch(e){}if(r.status===401&&action!=='login'){setToken('');show();}if(!r.ok)throw new Error(d.error||'Something went wrong.');return d;}
+function setToken(t){TOKEN=t;try{t?sessionStorage.setItem('vk-admin',t):sessionStorage.removeItem('vk-admin');}catch(e){}}
+function show(){$('#loginV').hidden=!!TOKEN;$('#appV').hidden=!TOKEN;if(TOKEN)go(location.hash.slice(1)||'overview');}
+$('#loginF').onsubmit=async e=>{e.preventDefault();$('#loginErr').textContent='';try{const d=await call('login',{password:e.target.pw.value});setToken(d.token);show();}catch(x){$('#loginErr').textContent=x.message;}};
+$('#logout').onclick=()=>{setToken('');show();};
+$$('.tabs button').forEach(b=>b.onclick=()=>go(b.dataset.v));
+function go(v){if(!['overview','payments','customers','settings'].includes(v))v='overview';history.replaceState(null,'','#'+v);$$('.tabs button').forEach(b=>b.dataset.v===v?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
+  for(const k of['overview','payments','customers','settings'])$('#v-'+k).hidden=k!==v;VIEWS[v]().catch(e=>toast(e.message));}
+const planTag=u=>u.pro?(u.trial?'<span class="tag wait">Trial</span>':'<span class="tag ok">Pro</span>'):'<span class="tag">Free</span>';
+const wa=(phone,msg)=>`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`;
+const VIEWS={
+ async overview(){const s=await call('stats'),el=$('#v-overview'),max=Math.max(1,...s.series.map(x=>x.amount));
+  el.innerHTML=`${s.paymentsReady?'':'<div class="notice">Payments are off: everything in the app is free. Save your UPI ID in Settings to start selling Pro.</div>'}
+   <div class="stats"><div class="stat"><span>Waiting to approve</span><b>${s.waiting}</b></div><div class="stat"><span>This month</span><b>${rupees(s.revenueMonth)}</b></div><div class="stat"><span>All time</span><b>${rupees(s.revenue)}</b></div><div class="stat"><span>Customers</span><b>${s.users}</b></div><div class="stat"><span>On Pro now</span><b>${s.pro}</b></div><div class="stat"><span>Active this week</span><b>${s.activeWeek}</b></div></div>
+   <div class="card"><h2>Earnings, last 6 months</h2><div class="chart">${s.series.map(x=>`<div><span>${x.amount?rupees(x.amount):''}</span><i style="height:${Math.round(x.amount/max*100)}%"></i><span>${x.label}</span></div>`).join('')}</div></div>
+   <div class="card"><h2>Pro ending soon</h2>${list(s.expiring,u=>`ends ${day(u.paidUntil)}`,'Your VivahKala Pro ends soon. Renew in the app to keep every design and clean downloads.')}</div>
+   <div class="card"><h2>Pro ended recently</h2>${list(s.lapsed,u=>`ended ${day(u.paidUntil)}`,'Your VivahKala Pro has ended. Renew in the app any time to get every design back.')}</div>`;
+  if(s.waiting)el.querySelector('.stat').style.borderColor='var(--brand)';},
+ async payments(){const {payments}=await call('payments'),el=$('#v-payments');const pend=payments.filter(o=>o.state==='PENDING');
+  el.innerHTML=`<div class="card"><h2>Waiting to approve (${pend.length})</h2><p class="muted">Find each UTR in your bank or UPI app. Approve only if the amount arrived. Rejecting lets the customer submit the right number.</p>${table(pend,true)}</div><div class="card"><h2>All payments</h2>${table(payments,false)}</div>`;
+  $$('[data-ap]',el).forEach(b=>b.onclick=async()=>{b.disabled=true;try{await call('approve',{id:b.dataset.ap});toast('Approved. Pro is on for this customer.');VIEWS.payments();}catch(e){toast(e.message);b.disabled=false;}});
+  $$('[data-rj]',el).forEach(b=>b.onclick=async()=>{if(!confirm('Reject this payment? Use this when the UTR is not in your account.'))return;b.disabled=true;try{await call('reject',{id:b.dataset.rj});toast('Rejected.');VIEWS.payments();}catch(e){toast(e.message);b.disabled=false;}});},
+ async customers(q){const el=$('#v-customers');if(!el.querySelector('#q')){el.innerHTML=`<div class="card"><div class="row" style="margin-bottom:12px"><input id="q" placeholder="Search mobile or name" style="flex:1;min-width:200px"><button class="btn ghost" id="csv" type="button">Download CSV</button></div><div class="scroll" id="ulist"></div></div>`;
+   let t;$('#q').oninput=()=>{clearTimeout(t);t=setTimeout(()=>VIEWS.customers($('#q').value),300);};$('#csv').onclick=()=>csv();}
+  const {users}=await call('users',{q:q||$('#q').value||''});VIEWS._users=users;
+  $('#ulist').innerHTML=users.length?`<table><thead><tr><th>Customer</th><th>Plan</th><th>Joined</th><th>Last seen</th><th></th></tr></thead><tbody>${users.map(u=>`<tr><td><b>${esc(u.name||'–')}</b><br><a href="${wa(u.phone,'Hello from VivahKala!')}" target="_blank" rel="noopener">${esc(u.phone)}</a></td><td>${planTag(u)}${u.pro?`<br><span class="muted">until ${day(u.paidUntil)}</span>`:''}</td><td>${day(u.createdAt)}</td><td>${day(u.lastSeen)}</td>
+   <td><div class="row"><button class="btn sm" data-gr="${esc(u.phone)}">Give days</button>${u.pro?`<button class="btn ghost sm" data-rv="${esc(u.phone)}">Remove Pro</button>`:''}<button class="btn ghost sm" data-pw="${esc(u.phone)}">New password</button></div></td></tr>`).join('')}</tbody></table>`:'<p class="muted">No customers yet.</p>';
+  $$('[data-gr]').forEach(b=>b.onclick=async()=>{const d=prompt('Add how many days of Pro?','30');if(!d)return;try{await call('grant',{phone:b.dataset.gr,days:d});toast('Pro days added.');VIEWS.customers();}catch(e){toast(e.message);}});
+  $$('[data-rv]').forEach(b=>b.onclick=async()=>{if(!confirm('Remove Pro from '+b.dataset.rv+' now?'))return;try{await call('revoke',{phone:b.dataset.rv});toast('Pro removed.');VIEWS.customers();}catch(e){toast(e.message);}});
+  $$('[data-pw]').forEach(b=>b.onclick=async()=>{if(!confirm('Make a new password for '+b.dataset.pw+'? Their old one stops working.'))return;try{const d=await call('resetPassword',{phone:b.dataset.pw});prompt('New password (send it to the customer):',d.password);}catch(e){toast(e.message);}});},
+ async settings(){const {settings:s}=await call('getSettings'),el=$('#v-settings');
+  el.innerHTML=`<form class="card" id="setF"><h2>Payments and plans</h2><div class="grid">
+   <label>Your UPI ID (customers pay this)<input name="upiId" value="${esc(s.upiId)}" placeholder="name@bank"></label><label>Name customers see<input name="payeeName" value="${esc(s.payeeName)}" maxlength="50"></label>
+   <label>Monthly price (₹)<input name="monthly" type="number" min="1" value="${s.monthly}"></label><label>Yearly price (₹)<input name="yearly" type="number" min="1" value="${s.yearly}"></label>
+   <label>Free Pro trial for new accounts (days, 0 = off)<input name="trialDays" type="number" min="0" max="90" value="${s.trialDays}"></label>
+   <label>Pro features<select name="enforce"><option value="1"${s.enforce?' selected':''}>Only for Pro customers</option><option value="0"${s.enforce?'':' selected'}>Free for everyone (plans hidden)</option></select></label></div>
+   <p class="err" role="alert"></p><button class="btn" type="submit">Save</button><p class="muted">Pro is not switched on until a valid UPI ID is saved here.</p></form>`;
+  const f=$('#setF');f.onsubmit=async e=>{e.preventDefault();$('.err',f).textContent='';try{await call('saveSettings',{upiId:f.upiId.value,payeeName:f.payeeName.value,monthly:f.monthly.value,yearly:f.yearly.value,trialDays:f.trialDays.value,enforce:f.enforce.value==='1'});toast('Saved.');}catch(x){$('.err',f).textContent=x.message;}};},
+};
+function list(users,sub,msg){return users.length?'<table><tbody>'+users.map(u=>`<tr><td><b>${esc(u.name||u.phone)}</b> <span class="muted">${esc(u.phone)} · ${sub(u)}</span></td><td style="text-align:right"><a class="btn ghost sm" href="${wa(u.phone,msg)}" target="_blank" rel="noopener">WhatsApp</a></td></tr>`).join('')+'</tbody></table>':'<p class="muted">Nobody right now.</p>';}
+function table(rows,act){if(!rows.length)return'<p class="muted">Nothing here.</p>';return`<div class="scroll"><table><thead><tr><th>Customer</th><th>Plan</th><th>Amount</th><th>UTR</th><th>Submitted</th><th>${act?'':'Status'}</th></tr></thead><tbody>${rows.map(o=>`<tr><td><b>${esc(o.name||'–')}</b><br>${esc(o.phone)}</td><td>${o.plan==='yearly'?'Yearly':'Monthly'}</td><td>${rupees(o.amount/100)}</td><td><code>${esc(o.utr)}</code></td><td>${when(o.createdAt)}</td>
+  <td>${act?`<div class="row"><button class="btn sm" data-ap="${esc(o.id)}">Approve</button><button class="btn ghost sm" data-rj="${esc(o.id)}">Reject</button></div>`:o.state==='COMPLETED'?'<span class="tag ok">Approved</span>':o.state==='PENDING'?'<span class="tag wait">Waiting</span>':'<span class="tag bad">Rejected</span>'}</td></tr>`).join('')}</tbody></table></div>`;}
+function csv(){const u=VIEWS._users||[],q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const rows=[['Mobile','Name','Plan','Pro until','Joined','Last seen'],...u.map(x=>[x.phone,x.name,x.pro?(x.trial?'Trial':'Pro'):'Free',x.pro?day(x.paidUntil):'',day(x.createdAt),day(x.lastSeen)])];
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv'}));a.download='vivahkala-customers.csv';a.click();}
+show();
+</script>
+</body>
+</html>

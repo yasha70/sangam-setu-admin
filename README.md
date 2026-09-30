@@ -51,3 +51,48 @@ A festive wedding look: warm ivory `#FFF5E8` covered in colourful line doodles o
 - Add Terms and Privacy Policy pages.
 - Mobile numbers aren't verified yet. Add an SMS OTP provider (for example MSG91) to verify numbers at sign-up.
 - Add an admin view to review reported or blocked profiles.
+
+## VivahKala (wedding invitation cards and videos)
+
+`vivahkala/` is a separate site, deployed on Vercel as the `vivahkala` project (root directory `vivahkala`, no build step) at https://vivahkala.vercel.app.
+
+- `index.html` the whole app: card designer, animated video maker, and the Plan page. Phones get a top bar, a bottom tab bar (Details, Card, Video, Plan) and a download bar above it; screens 1024px and wider get a side menu with the plan card, a large preview and the controls beside it.
+- `admin.html` the owner's panel at `/admin`: payments to approve, customers (give Pro days, remove Pro, new password, CSV), earnings, and Settings (UPI ID, prices, free trial days).
+- `api/` Vercel functions, the same model as PakkaBill: `auth` (sign up, log in, mobile number and password), `me`, `config`, `pay` (submit a UTR, list my payments), `admin`.
+- The video (about 50 seconds, 9:16): the intro writes the title out by hand; the groom and the bride each walk in; the **varmala** under a mandap, where the bride lifts her garland over the groom's head and places it round his neck, then he does the same for her (the one receiving bows their head, and petals burst as each garland lands); the functions; a **countdown** of days left to the wedding (from the day the video is made); the date and venue; and a closing **namaste**, both with palms joined, bowing to invite the guests. A **guest name** (Video → Personal invite) greets that family by name at the start and the end, and goes into the file name, so one video can be made per family.
+- 10 story videos (Pro). Each is its own short film with its own scenes, look and ending; nothing is shared between them or with the classic videos. They use the same cartoon groom and bride as the classic videos (`RG`/`RB` call `drawGroom`/`drawBride`). A realistic pair (`drawRealGroom`, `drawRealBride`) is still in the code but not used; point `RG`/`RB` at them to switch. Scenes are in `CONCEPT` and `STORY` in `index.html`, and each template's `story` lists its scenes:
+  - **Royal Baraat**: palace at night with the bride on the balcony → groom on a decorated horse with a dhol band → aarti at the gate and a royal scroll with the details.
+  - **Saat Phere**: the mandap builds itself → seven rounds of the sacred fire with the vows → sindoor and mangalsutra, with the details.
+  - **Love Letter**: a pen writes the invitation by candlelight → the envelope opens → the bride posts it into a red letter box, postmarked with the date.
+  - **Blockbuster Premiere**: clapperboard → trailer close-ups → movie poster → rolling credits (the guest gets the special appearance).
+  - **Breaking News**: TV studio with an anchor → the newspaper → a reporter live from the venue.
+  - **Flight to Forever**: split-flap departures board → flight and boarding pass → arrival at the venue.
+  - **Wedding Express**: station platform with the clock set to the wedding time → a train with a carriage per function → a punched ticket.
+  - **Kites of Love**: sunrise rooftops → kites tangling into a heart → the date written in the sky.
+  - **Match of the Century**: the toss → a six → lifting the World Cup of Love.
+  - **Mehendi Secret**: names written with a mehendi cone → the groom's name hidden in her mehendi → two hands and a ring.
+- **Faces from photos**: when a photo of the groom or bride is added, the face is found automatically (`face/`: face-api by vladmandic, MIT, tiny face detector and 68-point landmarks, loaded only when a photo is added), straightened with the eyes on a fixed line, colour-corrected and painted in a cartoon style so it matches the characters, and the eyes blink in the video. Face style can be switched to the real photo. If no face is found, the person places it by hand. Everything runs on the device.
+- `qrcode.js` QR code generator (qrcode-generator 1.4.4, MIT) for the UPI QR.
+
+### Accounts
+
+Downloading anything (card image, PDF, share, making or downloading the video) needs an account. Logged out, those buttons open a Log in / Create account dialog (mobile number and password, no OTP yet) and the download carries on as soon as the person is signed in. Designing and previewing stay open to everyone. Accounts need the Upstash database connected to the project; if the server can't be reached the dialog says sign-in is not available. The check runs in the browser, since the files are made on the device.
+
+### Plans
+
+| | Free | Pro (monthly or yearly) |
+|---|---|---|
+| Card designs | 6 | all 20 |
+| Video designs | 2 | all 7 |
+| Downloads | small "Made with VivahKala" mark | no mark |
+| PDF, HD 720p video, own song | – | ✓ |
+
+Free users can preview every design; Pro is asked for when they download. Payment is by UPI QR: the customer pays the owner's UPI ID, submits the 12-digit UTR, and the owner approves it in `/admin`, which adds 30 or 365 days (renewals add on top). New accounts get a free Pro trial (`trialDays`, default 1, 0 turns it off). Until a UPI ID is saved in `/admin`, or if the server can't be reached, everything is free.
+
+### Setting it up on Vercel
+
+1. Connect the existing Upstash Redis database to the `vivahkala` project (Storage → Connect). Its keys are stored under `vk:`, so it can share the database with PakkaBill and Sangam Setu.
+2. Add `ADMIN_PASSWORD` (8+ characters) and redeploy.
+3. Open `/admin` → Settings, save your UPI ID, the name customers see, and prices (default ₹149 a month, ₹499 a year).
+
+Plan checks run in the browser, so a technical user could get around them. Payments only count once the owner approves them.
