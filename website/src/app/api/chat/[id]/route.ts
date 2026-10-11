@@ -1,4 +1,4 @@
-import { canChat, getMessages, isTyping, markRead, meetStatuses, readMarker, sendMeet, sendMessage } from "@/lib/data";
+import { canChat, chatState, getMessages, markRead, messageById, previewText, sendMeet, sendMessage } from "@/lib/data";
 import { fail, ok, readJson, withUser } from "@/lib/api";
 import { kv } from "@/lib/kv";
 import { MEET_MODES, type MeetMode } from "@/lib/types";
@@ -13,8 +13,8 @@ export const GET = withUser(async (uid, req, ctx: Ctx) => {
   const messages = await getMessages(uid, id, after);
   const latest = messages.length ? messages[messages.length - 1].ts : after;
   if (latest) await markRead(uid, id, latest);
-  const [theirRead, typing, meets] = await Promise.all([readMarker(id, uid), isTyping(id, uid), meetStatuses(uid, id)]);
-  return ok({ messages, theirRead, typing, meets });
+  const state = await chatState(uid, id);
+  return ok({ messages, ...state });
 });
 
 export const POST = withUser(async (uid, req, ctx: Ctx) => {
@@ -34,6 +34,11 @@ export const POST = withUser(async (uid, req, ctx: Ctx) => {
   }
   const text = String(body.text ?? "").trim().slice(0, 2000);
   if (!text) return fail("Type a message first.");
-  const message = await sendMessage(uid, id, text);
+  let reply;
+  if (typeof body.replyTo === "string" && body.replyTo) {
+    const target = await messageById(uid, id, body.replyTo);
+    if (target && target.kind !== "deleted") reply = { id: target.id, from: target.from, text: previewText(target).slice(0, 140) };
+  }
+  const message = await sendMessage(uid, id, text, reply ? { reply } : {});
   return ok({ message });
 });

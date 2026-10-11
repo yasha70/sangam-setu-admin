@@ -49,6 +49,11 @@ const PATHS: Record<string, ReactNode> = {
   quote: (<><path d="M4 18c3-1 4.5-3.5 4.5-7.5V6H3.5v6H7" /><path d="M14 18c3-1 4.5-3.5 4.5-7.5V6h-5v6H17" /></>),
   link: (<><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6" /><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2" /></>),
   grid: (<><rect x="3" y="3" width="7.5" height="7.5" rx="1.5" /><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" /><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" /><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" /></>),
+  more: (<><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></>),
+  reply: (<><polyline points="9 15 4 10 9 5" /><path d="M4 10h11a5 5 0 0 1 5 5v4" /></>),
+  smile: (<><circle cx="12" cy="12" r="9.5" /><path d="M8 14.5s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9.5" x2="9.01" y2="9.5" /><line x1="15" y1="9.5" x2="15.01" y2="9.5" /></>),
+  scale: (<><line x1="12" y1="3" x2="12" y2="21" /><path d="M5 7h14" /><path d="M5 7 2 14a3.5 3.5 0 0 0 6 0z" /><path d="M19 7l-3 7a3.5 3.5 0 0 0 6 0z" /><line x1="8" y1="21" x2="16" y2="21" /></>),
+  note: (<><path d="M4 4h12l4 4v12H4z" /><path d="M8 10h8M8 14h8M8 18h5" /></>),
   install: (<><rect x="6" y="2" width="12" height="20" rx="2.5" /><path d="M12 7v7" /><polyline points="9 11 12 14 15 11" /><line x1="10" y1="18.5" x2="14" y2="18.5" /></>),
 };
 

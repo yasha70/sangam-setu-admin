@@ -8,6 +8,8 @@ import "@fontsource/inter/700.css";
 import "@fontsource/rozha-one/400.css";
 import "./globals.css";
 import { AppNav } from "@/components/AppNav";
+import { CallManager } from "@/components/CallManager";
+import { CompareTray } from "@/components/Compare";
 import { Celebrate, InterestSheet } from "@/components/Interest";
 import { Toaster } from "@/components/Toaster";
 import { Lotus } from "@/components/Icon";
@@ -57,6 +59,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {me ? (
           <>
             <InterestSheet />
+            <CallManager />
+            <CompareTray />
             <Celebrate me={{ name: me.name, photo: me.photo }} />
           </>
         ) : null}

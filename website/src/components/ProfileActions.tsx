@@ -8,6 +8,7 @@ import { PdfButton } from "./PdfButton";
 import { SaveButton } from "./SaveButton";
 import { send, toast } from "./Toaster";
 import { celebrate, openInterest } from "./Interest";
+import { CompareButton } from "./Compare";
 import type { Relation } from "@/lib/types";
 
 type Kind = Relation["kind"];
@@ -86,6 +87,7 @@ export function ProfileActions({
       <div className="actions">
         <span className="pill sample" style={{ height: 44, padding: "0 16px" }}>Sample profile</span>
         <SaveButton id={id} initial={saved} variant="button" />
+        <CompareButton id={id} name={name} />
       </div>
     );
   }
@@ -135,6 +137,7 @@ export function ProfileActions({
         ) : null}
         {kind === "declined-by-them" ? <span className="pill" style={{ height: 44, padding: "0 14px" }}>{first} declined your interest</span> : null}
         <SaveButton id={id} initial={saved} variant="button" />
+        <CompareButton id={id} name={name} />
       </div>
       {kind === "received" ? <p className="muted small">{first}&apos;s family is interested in you. Accepting lets you both chat and see contact details.</p> : null}
       <div className="row">

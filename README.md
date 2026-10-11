@@ -16,6 +16,11 @@ Built after looking at how Shaadi.com, BharatMatrimony, Jeevansathi, Sangam.com,
 | **Parivar panel**: one private link (14 days) where family react ❤️ 👍 🤔 👎 and comment without an account | Indian matches are family decisions | `src/app/family`, `src/app/f/[token]`, `src/components/Family.tsx` |
 | **Plan a meeting** in chat (video call, phone call, coffee, family visit), accept with one tap, add to Google Calendar | Moves people from chat to meeting | `src/components/Conversation.tsx`, `src/app/api/chat/[id]/meet` |
 | **Typing indicator and icebreakers** in chat | Easier first message | `src/lib/match.ts` (`icebreakers`) |
+| **WhatsApp-style chat**: reply to a message, emoji reactions (or double-tap ❤️), delete for everyone within an hour, copy, photos with full-screen view, voice notes up to 2 minutes, emoji and quick replies, chat search, online dots | Families expect the chat they already know | `src/components/Conversation.tsx`, `src/app/api/chat/[id]/*` |
+| **Voice and video calls in the app**, peer to peer over WebRTC, ringing on any page, mute, camera off, flip camera; call history cards with "Call back" | Talk before meeting without sharing numbers | `src/lib/calls.ts`, `src/components/CallManager.tsx`, `src/app/api/call` |
+| **Money-scam warning** under any message that mentions UPI, OTP, bank details or money, plus a Safety centre | Romance and matrimony fraud usually starts with a money request | `src/components/Conversation.tsx`, `src/app/safety` |
+| **Compare profiles** side by side (up to 3) with match, Guna, details, family reactions and your notes | How families actually weigh options | `src/app/compare`, `src/components/Compare.tsx` |
+| **Private notes** on any profile, visible only to you | "Papa spoke to their father on Sunday" | `PrivateNote` in `src/components/Compare.tsx` |
 | **Notifications** for interests, acceptances, profile views, family reactions and meetings | Brings people back | `src/app/notifications` |
 | **"Rishta jud gaya" celebration** when both say yes | A moment worth remembering | `Celebrate` in `src/components/Interest.tsx` |
 | **Photo privacy**: show photos only to people you've shown interest in | Common request from families | `photoPrivacy` in `src/lib/data.ts` |
@@ -58,6 +63,10 @@ Open `/admin` and log in with the `ADMIN_PASSWORD` environment variable. Without
 - **Settings**: an announcement strip shown to every member at the top of the site, and a switch to remove or restore the sample profiles.
 
 To change the admin password, edit `ADMIN_PASSWORD` in Vercel → Project → Settings → Environment Variables and redeploy.
+
+### Calls
+
+Calls connect the two browsers directly (WebRTC) and use public STUN servers to find a route. On some mobile networks a direct route isn't possible; for those, add a TURN relay (for example from Metered, Twilio or Cloudflare) by setting `TURN_URL` (comma-separated), `TURN_USERNAME` and `TURN_CREDENTIAL` in Vercel. Until then, a call that can't connect ends with "Couldn't connect on this network".
 
 ### Guna Milan
 

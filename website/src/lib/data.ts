@@ -10,6 +10,8 @@ import {
   PRIVATE_FIELDS,
   type Biodata,
   type BiodataTextField,
+  type CallOutcome,
+  type ChatMeta,
   type FamilyVote,
   type Gender,
   type Interest,
@@ -46,6 +48,9 @@ import {
    famvote:{owner}:{id} FamilyVote[] JSON: family reactions to a profile on the owner's list
    typing:{cid}:{id}    set for a few seconds while someone types
    meets:{cid}          JSON map of meeting message id -> status
+   cmeta:{cid}          ChatMeta JSON: reactions per message, ids deleted for everyone
+   calls:{cid}          JSON map of call id -> outcome (see lib/calls.ts for the call keys)
+   pnote:{id}:{other}   a member's private note about a profile
 */
 
 export { ageFrom, completeness, publishProblems } from "./bio";
@@ -381,15 +386,16 @@ export async function canChat(me: string, other: string) {
   return (await kv().zscore(`conn:${me}`, other)) !== null;
 }
 
-export async function sendMessage(me: string, other: string, text: string) {
+export async function sendMessage(me: string, other: string, text: string, extra: Partial<Pick<Message, "kind" | "media" | "reply" | "call">> = {}) {
   const cid = chatId(me, other);
   const ts = Date.now();
-  const msg: Message = { id: `${ts}-${randomBytes(4).toString("hex")}`, from: me, text, ts };
+  const msg: Message = { id: `${ts}-${randomBytes(4).toString("hex")}`, from: me, text, ts, ...extra };
   await kv().zadd(`chat:${cid}`, ts, JSON.stringify(msg));
   await Promise.all([
     kv().zadd(`chats:${me}`, ts, other),
     kv().zadd(`chats:${other}`, ts, me),
     kv().set(`read:${cid}:${me}`, String(ts)),
+    kv().del(`typing:${cid}:${me}`),
   ]);
   await bumpStat("messages");
   return msg;
@@ -418,6 +424,7 @@ export async function listChats(me: string) {
       const cid = chatId(me, o);
       const [last, read] = await Promise.all([kv().zlast(`chat:${cid}`, 1), kv().get(`read:${cid}:${me}`)]);
       const lastMsg = last[0] ? (JSON.parse(last[0]) as Message) : null;
+      if (lastMsg) lastMsg.text = previewText(lastMsg);
       const readTs = Number(read ?? 0);
       const newer = await kv().zafter(`chat:${cid}`, readTs, 100);
       const unread = newer.map((r) => JSON.parse(r) as Message).filter((m) => m.from !== me).length;
@@ -437,7 +444,26 @@ export type ChatSummary = {
   photo: string | null;
   last: { text: string; ts: number; mine: boolean } | null;
   unread: number;
+  online?: boolean;
 };
+
+/** One line describing a message, for chat lists and notifications. */
+export function previewText(m: Message) {
+  switch (m.kind) {
+    case "image":
+      return m.text ? `📷 ${m.text}` : "📷 Photo";
+    case "voice":
+      return `🎤 Voice note${m.media?.dur ? ` (${Math.floor(m.media.dur / 60)}:${String(Math.round(m.media.dur % 60)).padStart(2, "0")})` : ""}`;
+    case "call":
+      return m.call?.video ? "🎥 Video call" : "📞 Voice call";
+    case "meet":
+      return `📅 ${m.text}`;
+    case "deleted":
+      return "🚫 Message deleted";
+    default:
+      return m.text;
+  }
+}
 
 /** Everyone this user can chat with, most recent conversation first. */
 export async function chatListFor(me: string): Promise<ChatSummary[]> {
@@ -448,7 +474,7 @@ export async function chatListFor(me: string): Promise<ChatSummary[]> {
   ]);
   const withChat = new Set(chats.map((c) => c.other));
   const ids = [...chats.map((c) => c.other), ...conns.filter((c) => !withChat.has(c))].filter((i) => !hidden.has(i));
-  const bios = await getBiodatas(ids);
+  const [bios, users] = await Promise.all([getBiodatas(ids), getUsers(ids)]);
   const byId = new Map(chats.map((c) => [c.other, c]));
   return ids.map((id, n) => {
     const c = byId.get(id);
@@ -458,6 +484,7 @@ export async function chatListFor(me: string): Promise<ChatSummary[]> {
       photo: bios[n]?.photos[0] ?? null,
       last: c?.last ? { text: c.last.text, ts: c.last.ts, mine: c.last.from === me } : null,
       unread: c?.unread ?? 0,
+      online: Boolean(users[n]?.lastActive && Date.now() - users[n]!.lastActive! < 3 * 60_000),
     };
   });
 }
@@ -532,7 +559,7 @@ export async function userCount() {
 }
 
 export async function statTotals() {
-  const names = ["signups", "interests", "connections", "messages", "meetings", "family_votes"];
+  const names = ["signups", "interests", "connections", "messages", "meetings", "family_votes", "calls"];
   const vals = await kv().mget(names.map((n) => `stats:${n}`));
   return Object.fromEntries(names.map((n, i) => [n, Number(vals[i] ?? 0)])) as Record<string, number>;
 }
@@ -691,6 +718,11 @@ export async function familyList(owner: string): Promise<FamilyItem[]> {
   return out;
 }
 
+export async function kvFamilyVotes(owner: string, profiles: string[]) {
+  const rows = await kv().mget(profiles.map((p) => `famvote:${owner}:${p}`));
+  return new Map(profiles.map((p, i) => [p, parse<FamilyVote[]>(rows[i]) ?? []]));
+}
+
 export async function familyVotesFor(owner: string, profile: string) {
   return parse<FamilyVote[]>(await kv().get(`famvote:${owner}:${profile}`)) ?? [];
 }
@@ -756,4 +788,89 @@ export async function respondMeet(me: string, other: string, mid: string, accept
   const what = msg.meet.mode.toLowerCase();
   const reply = accept ? `Accepted the ${what}. See you then! 🙏` : `Can't make the ${what} at that time. Could we find another time?`;
   return await sendMessage(me, other, reply);
+}
+
+// ---------- chat: reactions, deletion, lookup ----------
+
+async function findMessage(cid: string, mid: string) {
+  const recent = await kv().zlast(`chat:${cid}`, 500);
+  const raw = recent.find((r) => r.includes(`"id":"${mid}"`));
+  return raw ? { raw, msg: JSON.parse(raw) as Message } : null;
+}
+
+export async function messageById(me: string, other: string, mid: string) {
+  return (await findMessage(chatId(me, other), mid))?.msg ?? null;
+}
+
+export async function chatMeta(me: string, other: string): Promise<ChatMeta> {
+  return parse<ChatMeta>(await kv().get(`cmeta:${chatId(me, other)}`)) ?? { rx: {}, del: [] };
+}
+
+/** Everything a chat poll needs besides new messages, in one round trip. */
+export async function chatState(me: string, other: string) {
+  const cid = chatId(me, other);
+  const [read, typing, meets, meta, calls] = await kv().mget([
+    `read:${cid}:${other}`,
+    `typing:${cid}:${other}`,
+    `meets:${cid}`,
+    `cmeta:${cid}`,
+    `calls:${cid}`,
+  ]);
+  return {
+    theirRead: Number(read ?? 0),
+    typing: Boolean(typing),
+    meets: parse<Record<string, MeetStatus>>(meets) ?? {},
+    meta: parse<ChatMeta>(meta) ?? { rx: {}, del: [] },
+    calls: parse<Record<string, CallOutcome>>(calls) ?? {},
+  };
+}
+
+export async function reactToMessage(me: string, other: string, mid: string, emoji: string | null) {
+  const cid = chatId(me, other);
+  if (!(await findMessage(cid, mid))) return null;
+  const meta = await chatMeta(me, other);
+  const cur = { ...(meta.rx[mid] ?? {}) };
+  if (emoji && cur[me] !== emoji) cur[me] = emoji;
+  else delete cur[me];
+  if (Object.keys(cur).length) meta.rx[mid] = cur;
+  else delete meta.rx[mid];
+  await kv().set(`cmeta:${cid}`, JSON.stringify(meta));
+  return meta;
+}
+
+const DELETE_WINDOW = 60 * 60_000;
+
+/** "Delete for everyone": the sender can remove a message within an hour. The content is erased, not just hidden. */
+export async function deleteMessage(me: string, other: string, mid: string) {
+  const cid = chatId(me, other);
+  const found = await findMessage(cid, mid);
+  if (!found || found.msg.from !== me) return { error: "You can only delete your own messages." as const };
+  if (found.msg.kind === "deleted") return { error: "Already deleted." as const };
+  if (Date.now() - found.msg.ts > DELETE_WINDOW) return { error: "Messages can be deleted for everyone within an hour of sending." as const };
+  const replacement: Message = { id: found.msg.id, from: found.msg.from, ts: found.msg.ts, text: "", kind: "deleted" };
+  await kv().zrem(`chat:${cid}`, found.raw);
+  await kv().zadd(`chat:${cid}`, found.msg.ts, JSON.stringify(replacement));
+  const meta = await chatMeta(me, other);
+  meta.del = [...new Set([...meta.del, mid])].slice(-300);
+  delete meta.rx[mid];
+  await kv().set(`cmeta:${cid}`, JSON.stringify(meta));
+  return { message: replacement, media: found.msg.media?.url };
+}
+
+// ---------- private notes ----------
+
+export async function privateNote(me: string, other: string) {
+  return (await kv().get(`pnote:${me}:${other}`)) ?? "";
+}
+
+export async function setPrivateNote(me: string, other: string, text: string) {
+  const t = text.trim().slice(0, 1000);
+  if (t) await kv().set(`pnote:${me}:${other}`, t);
+  else await kv().del(`pnote:${me}:${other}`);
+  return t;
+}
+
+export async function privateNotes(me: string, others: string[]) {
+  const rows = await kv().mget(others.map((o) => `pnote:${me}:${o}`));
+  return new Map(others.map((o, i) => [o, rows[i] ?? ""]));
 }

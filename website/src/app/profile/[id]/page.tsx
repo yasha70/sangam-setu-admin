@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BiodataView } from "@/components/BiodataView";
+import { PrivateNote } from "@/components/Compare";
 import { VoteList, VoteSummary } from "@/components/Family";
 import { Icon } from "@/components/Icon";
 import { GunaCard, MatchCard } from "@/components/Insights";
 import { ProfileActions } from "@/components/ProfileActions";
 import { gunaBetween } from "@/lib/astro";
 import { requireUser } from "@/lib/auth";
-import { activityLabel, biodataForViewer, blockedByThem, familyVotesFor, getBiodata, getUser, recordView, relationBetween, savedIds } from "@/lib/data";
+import { activityLabel, biodataForViewer, blockedByThem, familyVotesFor, getBiodata, getUser, privateNote, recordView, relationBetween, savedIds } from "@/lib/data";
 import { commonGround, isMutual, matchFor } from "@/lib/match";
 
 export const metadata: Metadata = { title: "Profile" };
@@ -18,13 +19,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const user = await requireUser(`/profile/${id}`);
   if (id === user.id) redirect("/biodata");
 
-  const [bio, relation, saved, theyBlocked, me, votes] = await Promise.all([
+  const [bio, relation, saved, theyBlocked, me, votes, note] = await Promise.all([
     getBiodata(id),
     relationBetween(user.id, id),
     savedIds(user.id),
     blockedByThem(user.id, id),
     getBiodata(user.id),
     familyVotesFor(user.id, id),
+    privateNote(user.id, id),
   ]);
   const visible = bio && !theyBlocked && (bio.published || relation.kind === "connected" || relation.kind === "blocked");
 
@@ -62,6 +64,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           <VoteList votes={votes} />
         </section>
       ) : null}
+      <PrivateNote id={id} initial={note} first={first} />
     </>
   ) : null;
   return (

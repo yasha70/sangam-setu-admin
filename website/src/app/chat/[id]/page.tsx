@@ -4,7 +4,7 @@ import { ChatList } from "@/components/ChatList";
 import { Conversation } from "@/components/Conversation";
 import { requireUser } from "@/lib/auth";
 import { ageFrom } from "@/lib/bio";
-import { activityLabel, canChat, chatListFor, getBiodata, getMessages, getUser, markRead, meetStatuses, readMarker } from "@/lib/data";
+import { activityLabel, canChat, chatListFor, chatState, getBiodata, getMessages, getUser, markRead } from "@/lib/data";
 import { icebreakers } from "@/lib/match";
 
 export const metadata: Metadata = { title: "Chat" };
@@ -25,13 +25,12 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
     );
   }
 
-  const [bio, messages, theirRead, other, mine, meets] = await Promise.all([
+  const [bio, messages, other, mine, state] = await Promise.all([
     getBiodata(id),
     getMessages(user.id, id, 0),
-    readMarker(id, user.id),
     getUser(id),
     getBiodata(user.id),
-    meetStatuses(user.id, id),
+    chatState(user.id, id),
   ]);
   if (messages.length) await markRead(user.id, id, messages[messages.length - 1].ts);
   const chats = await chatListFor(user.id);
@@ -46,8 +45,10 @@ export default async function ChatPage({ params }: { params: Promise<{ id: strin
         me={user.id}
         other={{ id, name: bio?.fullName ?? "Unnamed", photo: bio?.photos[0] ?? null, line }}
         initial={messages}
-        initialRead={theirRead}
-        initialMeets={meets}
+        initialRead={state.theirRead}
+        initialMeets={state.meets}
+        initialMeta={state.meta}
+        initialCalls={state.calls}
         starters={bio && mine ? icebreakers(mine, bio) : []}
       />
     </main>

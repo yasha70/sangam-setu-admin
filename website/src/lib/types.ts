@@ -160,17 +160,32 @@ export const MEET_MODES = ["Video call", "Phone call", "Coffee meet", "Family vi
 export type MeetMode = (typeof MEET_MODES)[number];
 export type MeetStatus = "proposed" | "accepted" | "declined";
 
+export type MessageKind = "text" | "meet" | "note" | "image" | "voice" | "call" | "deleted";
+
 export type Message = {
   id: string;
   from: string;
   text: string;
   ts: number;
-  /** "meet": a proposed meeting card. "note": the note sent with the interest. */
-  kind?: "text" | "meet" | "note";
+  /** "meet": a proposed meeting card. "note": the note sent with the interest. "deleted": removed for everyone. */
+  kind?: MessageKind;
   meet?: { when: string; mode: MeetMode; place?: string };
   /** For notes: what the sender was replying to. */
   quote?: string;
+  /** Photo or voice note. `dur` is in seconds for voice notes. */
+  media?: { url: string; dur?: number; w?: number; h?: number };
+  /** A snapshot of the message this one replies to. */
+  reply?: { id: string; from: string; text: string };
+  call?: { id: string; video: boolean };
 };
+
+/** Reactions and deletions, kept beside the messages so they can change after sending. */
+export type ChatMeta = { rx: Record<string, Record<string, string>>; del: string[] };
+
+export type CallStatus = "ringing" | "active" | "ended" | "declined" | "missed" | "cancelled";
+export type CallOutcome = { status: CallStatus; dur?: number };
+
+export const REACTIONS = ["❤️", "👍", "😂", "🙏", "😮", "😢"] as const;
 
 export type NoticeType = "interest" | "accepted" | "view" | "family" | "meet";
 

@@ -123,6 +123,8 @@ export function AppNav({ loggedIn, me }: { loggedIn: boolean; me?: { id: string;
             <Link role="menuitem" href="/biodata/edit"><Icon name="edit" />Edit biodata</Link>
             <Link role="menuitem" href="/family"><Icon name="family" />Parivar panel</Link>
             <Link role="menuitem" href="/kundli"><Icon name="moon" />Kundli match</Link>
+            <Link role="menuitem" href="/compare"><Icon name="scale" />Compare profiles</Link>
+            <Link role="menuitem" href="/safety"><Icon name="shield" />Safety centre</Link>
             <Link role="menuitem" href="/account"><Icon name="lock" />Account</Link>
             <button role="menuitem" onClick={logout}><Icon name="logout" />Log out</button>
           </div>

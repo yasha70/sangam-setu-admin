@@ -302,6 +302,7 @@ export default async function Home() {
           <span className="row" style={{ gap: 8 }}><Lotus className="foot-lotus" />© 2026 Sangam Setu</span>
           <nav className="row" aria-label="Footer">
             <Link href="/kundli">Guna Milan</Link>
+            <Link href="/safety">Safety</Link>
             <Link href="/signup">Create biodata</Link>
             <Link href="/login">Log in</Link>
           </nav>
