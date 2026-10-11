@@ -1,5 +1,6 @@
 import { Gallery } from "./Gallery";
 import { Icon, VerifiedTick } from "./Icon";
+import { PromptCards } from "./PromptCards";
 import { ageFrom } from "@/lib/bio";
 import type { Biodata, BiodataTextField } from "@/lib/types";
 
@@ -36,12 +37,17 @@ export function BiodataView({
   isSelf,
   actions,
   activity,
+  insights,
+  likeTarget,
 }: {
   bio: Biodata;
   canSeeContact: boolean;
   isSelf: boolean;
   actions?: React.ReactNode;
   activity?: string;
+  insights?: React.ReactNode;
+  /** When set, prompt answers get a like button that opens the interest sheet. */
+  likeTarget?: { id: string; name: string; photo?: string | null };
 }) {
   const v = (k: BiodataTextField) => bio[k]?.trim() || undefined;
   const age = ageFrom(v("dob"));
@@ -50,7 +56,7 @@ export function BiodataView({
 
   return (
     <div className="profile">
-      <Gallery photos={bio.photos} name={v("fullName") ?? "Profile photo"} />
+      <Gallery photos={bio.photos} name={v("fullName") ?? "Profile photo"} hidden={bio.photosHidden} />
 
       <div className="stack">
         <div>
@@ -78,6 +84,14 @@ export function BiodataView({
         </div>
 
         {actions}
+
+        {insights}
+
+        {bio.prompts?.length ? (
+          <section>
+            <PromptCards prompts={bio.prompts} target={likeTarget} />
+          </section>
+        ) : null}
 
         {v("about") || v("hobbies") ? (
           <section className="card">

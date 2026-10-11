@@ -7,6 +7,7 @@ import { Icon } from "./Icon";
 import { PdfButton } from "./PdfButton";
 import { SaveButton } from "./SaveButton";
 import { send, toast } from "./Toaster";
+import { celebrate, openInterest } from "./Interest";
 import type { Relation } from "@/lib/types";
 
 type Kind = Relation["kind"];
@@ -14,7 +15,7 @@ type Kind = Relation["kind"];
 export function useInterestAction() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
-  const act = async (id: string, action: "send" | "accept" | "decline" | "withdraw") => {
+  const act = async (id: string, action: "send" | "accept" | "decline" | "withdraw", person?: { name: string; photo?: string | null }) => {
     setBusy(true);
     try {
       const res = await send<{ result: string }>("/api/interests", "POST", { id, action });
@@ -24,7 +25,8 @@ export function useInterestAction() {
         declined: "Interest declined.",
         withdrawn: "Interest withdrawn.",
       };
-      toast(msg[res.result] ?? "Done.");
+      if (res.result === "connected" && person) celebrate({ id, name: person.name, photo: person.photo });
+      else toast(msg[res.result] ?? "Done.");
       router.refresh();
     } catch (e) {
       toast((e as Error).message, true);
@@ -35,7 +37,21 @@ export function useInterestAction() {
   return { act, busy };
 }
 
-export function ProfileActions({ id, name, kind, saved, sample = false }: { id: string; name: string; kind: Kind; saved: boolean; sample?: boolean }) {
+export function ProfileActions({
+  id,
+  name,
+  photo,
+  kind,
+  saved,
+  sample = false,
+}: {
+  id: string;
+  name: string;
+  photo?: string | null;
+  kind: Kind;
+  saved: boolean;
+  sample?: boolean;
+}) {
   const router = useRouter();
   const { act, busy } = useInterestAction();
   const [confirmBlock, setConfirmBlock] = useState(false);
@@ -88,7 +104,7 @@ export function ProfileActions({ id, name, kind, saved, sample = false }: { id: 
     <div className="stack" style={{ gap: 10 }}>
       <div className="actions">
         {kind === "none" || kind === "declined-by-me" ? (
-          <button className="btn btn-gold" disabled={busy} onClick={() => act(id, "send")}>
+          <button className="btn btn-brand btn-lg" disabled={busy} onClick={() => openInterest({ id, name, photo })}>
             <Icon name="heart" />
             Send interest
           </button>
@@ -101,7 +117,7 @@ export function ProfileActions({ id, name, kind, saved, sample = false }: { id: 
         ) : null}
         {kind === "received" ? (
           <>
-            <button className="btn btn-gold" disabled={busy} onClick={() => act(id, "accept")}>
+            <button className="btn btn-brand btn-lg" disabled={busy} onClick={() => act(id, "accept", { name, photo })}>
               <Icon name="check" />
               Accept interest
             </button>

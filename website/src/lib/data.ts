@@ -1,15 +1,24 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import { kv } from "./kv";
+import { MAX_PROMPTS, PROMPTS, PROMPT_ANSWER_MAX } from "./prompts";
 import {
   BIODATA_TEXT_FIELDS,
+  FAMILY_REACTIONS,
+  MEET_MODES,
   OWNER_ONLY_FIELDS,
   PRIVATE_FIELDS,
   type Biodata,
   type BiodataTextField,
+  type FamilyVote,
   type Gender,
   type Interest,
+  type MeetMode,
+  type MeetStatus,
   type Message,
+  type Notice,
+  type PartnerPrefs,
+  type PromptAnswer,
   type Relation,
   type Report,
   type User,
@@ -30,6 +39,13 @@ import {
    report:{rid}         Report JSON           reports:open / reports:closed  zsets of report ids by ts
    stats:{name}         running totals        stats:{name}:{yyyy-mm-dd}  daily totals
    settings:announcement  banner text shown to everyone
+   notif:{id}           zset of Notice JSON by ts      notifseen:{id}  ts the bell was last opened
+   celebrate:{id}       set of member ids whose acceptance this member hasn't celebrated yet
+   passed:{id}          zset of ids passed on in Discover, by ts (hidden from the deck for 30 days)
+   famtok:{id}          this member's family review token     fam:{token}  owner id (both expire)
+   famvote:{owner}:{id} FamilyVote[] JSON: family reactions to a profile on the owner's list
+   typing:{cid}:{id}    set for a few seconds while someone types
+   meets:{cid}          JSON map of meeting message id -> status
 */
 
 export { ageFrom, completeness, publishProblems } from "./bio";
@@ -145,7 +161,65 @@ export function biodataForViewer(b: Biodata, relation: Relation): Biodata {
   const copy: Biodata = { ...b };
   for (const f of OWNER_ONLY_FIELDS) delete copy[f];
   if (relation.kind !== "connected") for (const f of PRIVATE_FIELDS) delete copy[f];
-  return copy;
+  const showPhotos = b.photoPrivacy !== "interest" || ["connected", "received", "declined-by-me"].includes(relation.kind);
+  return showPhotos ? copy : withoutPhotos(copy);
+}
+
+/** Can the viewer see b's photos? `theirs` is b's interest in the viewer, `mine` the viewer's interest in b. */
+export function photosVisible(b: Biodata, theirs?: Interest | null, mine?: Interest | null) {
+  return b.photoPrivacy !== "interest" || Boolean(theirs) || mine?.status === "accepted";
+}
+
+export function withoutPhotos(b: Biodata): Biodata {
+  return b.photos.length ? { ...b, photos: [], photosHidden: b.photos.length } : b;
+}
+
+/** A biodata as it may appear in lists: no private fields, photos only if allowed. */
+export function forList(b: Biodata, showPhotos: boolean): Biodata {
+  const copy: Biodata = { ...b };
+  for (const f of [...OWNER_ONLY_FIELDS, ...PRIVATE_FIELDS]) delete copy[f];
+  return showPhotos ? copy : withoutPhotos(copy);
+}
+
+export function cleanPrefs(input: unknown): PartnerPrefs {
+  const p = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
+  const num = (v: unknown, lo: number, hi: number) => {
+    const n = Math.round(Number(v));
+    return Number.isFinite(n) && n >= lo && n <= hi ? n : undefined;
+  };
+  const list = (v: unknown) =>
+    Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === "string").map((x) => x.trim().slice(0, 60)).filter(Boolean))].slice(0, 40) : undefined;
+  const out: PartnerPrefs = {
+    ageMin: num(p.ageMin, 18, 80),
+    ageMax: num(p.ageMax, 18, 80),
+    heightMin: num(p.heightMin, 48, 90),
+    heightMax: num(p.heightMax, 48, 90),
+    religions: list(p.religions),
+    motherTongues: list(p.motherTongues),
+    marital: list(p.marital),
+    diets: list(p.diets),
+    states: list(p.states),
+    communities: typeof p.communities === "string" ? p.communities.trim().slice(0, 160) : undefined,
+    manglik: p.manglik === "Yes" || p.manglik === "No" ? p.manglik : "",
+  };
+  if (out.ageMin && out.ageMax && out.ageMin > out.ageMax) [out.ageMin, out.ageMax] = [out.ageMax, out.ageMin];
+  if (out.heightMin && out.heightMax && out.heightMin > out.heightMax) [out.heightMin, out.heightMax] = [out.heightMax, out.heightMin];
+  return Object.fromEntries(Object.entries(out).filter(([, v]) => v !== undefined && v !== "" && !(Array.isArray(v) && !v.length))) as PartnerPrefs;
+}
+
+export function cleanPrompts(input: unknown): PromptAnswer[] {
+  if (!Array.isArray(input)) return [];
+  const seen = new Set<string>();
+  const out: PromptAnswer[] = [];
+  for (const item of input) {
+    const q = typeof item?.q === "string" ? item.q : "";
+    const a = typeof item?.a === "string" ? item.a.trim().slice(0, PROMPT_ANSWER_MAX) : "";
+    if (!(PROMPTS as readonly string[]).includes(q) || !a || seen.has(q)) continue;
+    seen.add(q);
+    out.push({ q, a });
+    if (out.length === MAX_PROMPTS) break;
+  }
+  return out;
 }
 
 export async function listPublishedIds(limit = 1000) {
@@ -196,16 +270,31 @@ export async function relationBetween(me: string, other: string): Promise<Relati
   return { kind: "none" };
 }
 
-async function connect(a: string, b: string, interest: Interest) {
+async function firstName(id: string) {
+  const b = await getBiodata(id);
+  return (b?.fullName ?? "Someone").split(" ")[0];
+}
+
+/** `acceptor` said yes to `interest`, which the other person sent. */
+async function connect(acceptor: string, other: string, interest: Interest) {
   const now = Date.now();
   interest.status = "accepted";
   interest.updatedAt = now;
   await bumpStat("connections");
   await kv().set(`int:${interest.from}:${interest.to}`, JSON.stringify(interest));
-  await Promise.all([kv().zadd(`conn:${a}`, now, b), kv().zadd(`conn:${b}`, now, a)]);
+  await Promise.all([kv().zadd(`conn:${acceptor}`, now, other), kv().zadd(`conn:${other}`, now, acceptor)]);
+  // The note that came with the interest opens the conversation, like a first message.
+  if (interest.note) {
+    const msg: Message = { id: `${interest.createdAt}-note`, from: interest.from, text: interest.note, ts: interest.createdAt, kind: "note", quote: interest.liked };
+    const cid = chatId(acceptor, other);
+    await kv().zadd(`chat:${cid}`, msg.ts, JSON.stringify(msg));
+    await Promise.all([kv().zadd(`chats:${acceptor}`, now, other), kv().zadd(`chats:${other}`, now, acceptor), kv().set(`read:${cid}:${interest.from}`, String(msg.ts))]);
+  }
+  await kv().sadd(`celebrate:${other}`, acceptor);
+  await notify(other, { type: "accepted", who: acceptor, text: `${await firstName(acceptor)} accepted your interest. You can chat now.`, link: `/chat/${acceptor}` });
 }
 
-export async function sendInterest(me: string, other: string) {
+export async function sendInterest(me: string, other: string, extra: { note?: string; liked?: string } = {}) {
   const rel = await relationBetween(me, other);
   if (rel.kind === "received") {
     await connect(me, other, rel.interest);
@@ -214,10 +303,15 @@ export async function sendInterest(me: string, other: string) {
   if (rel.kind !== "none") return rel.kind;
   if (await isBlockedEitherWay(me, other)) return "blocked" as const;
   const now = Date.now();
-  const interest: Interest = { from: me, to: other, status: "pending", createdAt: now, updatedAt: now };
+  const note = extra.note?.trim().slice(0, 300) || undefined;
+  const liked = note ? extra.liked?.trim().slice(0, 240) || undefined : undefined;
+  const interest: Interest = { from: me, to: other, status: "pending", createdAt: now, updatedAt: now, note, liked };
   await kv().set(`int:${me}:${other}`, JSON.stringify(interest));
   await Promise.all([kv().zadd(`out:${me}`, now, other), kv().zadd(`in:${other}`, now, me)]);
+  await kv().zrem(`passed:${me}`, other);
   await bumpStat("interests");
+  const name = await firstName(me);
+  await notify(other, { type: "interest", who: me, text: note ? `${name} sent you an interest with a note.` : `${name} sent you an interest.`, link: "/interests" });
   return "sent" as const;
 }
 
@@ -376,6 +470,9 @@ export async function recordView(viewer: string, target: string) {
   const last = await kv().zscore(key, viewer);
   if (last && Date.now() - last < 30 * 60_000) return; // count a visitor again only after 30 minutes
   await Promise.all([kv().zadd(key, Date.now(), viewer), kv().incr(`viewcount:${target}`)]);
+  if (await kv().set(`vn:${target}:${viewer}`, "1", { nx: true, ex: 60 * 60 * 24 })) {
+    await notify(target, { type: "view", who: viewer, text: `${await firstName(viewer)} viewed your profile.`, link: `/profile/${viewer}` });
+  }
 }
 
 export async function viewsFor(id: string) {
@@ -435,7 +532,7 @@ export async function userCount() {
 }
 
 export async function statTotals() {
-  const names = ["signups", "interests", "connections", "messages"];
+  const names = ["signups", "interests", "connections", "messages", "meetings", "family_votes"];
   const vals = await kv().mget(names.map((n) => `stats:${n}`));
   return Object.fromEntries(names.map((n, i) => [n, Number(vals[i] ?? 0)])) as Record<string, number>;
 }
@@ -465,8 +562,198 @@ export async function deleteAccount(id: string) {
   await Promise.all([...ins.map((o) => kv().zrem(`out:${o}`, id)), ...outs.map((o) => kv().zrem(`in:${o}`, id))]);
   await kv().zrem("bios:pub", id);
   await kv().zrem("users", id);
-  const keys = [`user:${id}`, `bio:${id}`, `conn:${id}`, `in:${id}`, `out:${id}`, `saved:${id}`, `chats:${id}`, `views:${id}`, `viewcount:${id}`];
+  const tok = await kv().get(`famtok:${id}`);
+  const keys = [`user:${id}`, `bio:${id}`, `conn:${id}`, `in:${id}`, `out:${id}`, `saved:${id}`, `chats:${id}`, `views:${id}`, `viewcount:${id}`,
+    `notif:${id}`, `notifseen:${id}`, `celebrate:${id}`, `passed:${id}`, `famtok:${id}`];
+  if (tok) keys.push(`fam:${tok}`);
   if (user?.phone) keys.push(`phone:${user.phone}`);
   await kv().del(...keys);
   return { user, bio };
+}
+
+// ---------- notifications ----------
+
+export async function notify(uid: string, n: Omit<Notice, "id" | "ts">) {
+  if (uid.startsWith("sample-")) return;
+  const notice: Notice = { ...n, id: newId(), ts: Date.now() };
+  await kv().zadd(`notif:${uid}`, notice.ts, JSON.stringify(notice));
+  await kv().ztrim(`notif:${uid}`, 60);
+}
+
+export async function listNotices(uid: string, limit = 40) {
+  const raw = await kv().zrevrange(`notif:${uid}`, 0, limit - 1);
+  return raw.map((r) => JSON.parse(r) as Notice);
+}
+
+export async function unseenNoticeCount(uid: string) {
+  const seen = Number((await kv().get(`notifseen:${uid}`)) ?? 0);
+  return (await kv().zafter(`notif:${uid}`, seen, 99)).length;
+}
+
+export async function noticesSeenAt(uid: string) {
+  return Number((await kv().get(`notifseen:${uid}`)) ?? 0);
+}
+
+export async function markNoticesSeen(uid: string) {
+  await kv().set(`notifseen:${uid}`, String(Date.now()));
+}
+
+// ---------- celebrations ----------
+
+/** Someone accepted this member's interest and they haven't seen the celebration yet. */
+export async function pendingCelebration(uid: string) {
+  const ids = await kv().smembers(`celebrate:${uid}`);
+  for (const id of ids) {
+    const b = await getBiodata(id);
+    if (b) return { id, name: (b.fullName ?? "").split(" ")[0], photo: b.photoPrivacy === "interest" ? null : (b.photos[0] ?? null) };
+    await kv().srem(`celebrate:${uid}`, id);
+  }
+  return null;
+}
+
+export async function clearCelebration(uid: string, other: string) {
+  await kv().srem(`celebrate:${uid}`, other);
+}
+
+// ---------- discover ----------
+
+const PASS_DAYS = 30;
+
+export async function passProfile(me: string, other: string) {
+  await kv().zadd(`passed:${me}`, Date.now(), other);
+}
+
+export async function undoPass(me: string, other: string) {
+  await kv().zrem(`passed:${me}`, other);
+}
+
+export async function recentlyPassed(me: string) {
+  return new Set(await kv().zafter(`passed:${me}`, Date.now() - PASS_DAYS * 86400_000, 5000));
+}
+
+// ---------- family review ----------
+
+const FAMILY_DAYS = 14;
+
+export async function familyLink(uid: string) {
+  const token = await kv().get(`famtok:${uid}`);
+  if (!token) return null;
+  const raw = await kv().get(`fam:${token}`);
+  if (!raw) return null;
+  const { expires } = JSON.parse(raw) as { owner: string; expires: number };
+  return { token, expires };
+}
+
+export async function createFamilyLink(uid: string) {
+  const old = await kv().get(`famtok:${uid}`);
+  if (old) await kv().del(`fam:${old}`);
+  const token = randomBytes(12).toString("base64url");
+  const expires = Date.now() + FAMILY_DAYS * 86400_000;
+  await kv().set(`fam:${token}`, JSON.stringify({ owner: uid, expires }), { ex: FAMILY_DAYS * 86400 });
+  await kv().set(`famtok:${uid}`, token, { ex: FAMILY_DAYS * 86400 });
+  return { token, expires };
+}
+
+export async function revokeFamilyLink(uid: string) {
+  const old = await kv().get(`famtok:${uid}`);
+  if (old) await kv().del(`fam:${old}`, `famtok:${uid}`);
+}
+
+export async function familyOwner(token: string) {
+  if (!/^[\w-]{10,40}$/.test(token)) return null;
+  const raw = await kv().get(`fam:${token}`);
+  if (!raw) return null;
+  const { owner, expires } = JSON.parse(raw) as { owner: string; expires: number };
+  return expires > Date.now() ? owner : null;
+}
+
+export type FamilyItem = { bio: Biodata; group: "shortlist" | "interested" | "connected"; votes: FamilyVote[] };
+
+/** The profiles a member's family can review: their shortlist, people interested in them, and connections. */
+export async function familyList(owner: string): Promise<FamilyItem[]> {
+  const [saved, ids, hidden] = await Promise.all([savedIds(owner), listInterestIds(owner), hiddenFor(owner)]);
+  const rels = await interestsFor(owner, [...new Set([...saved, ...ids.received, ...ids.connected])]);
+  const groups = new Map<string, FamilyItem["group"]>();
+  for (const id of ids.connected) groups.set(id, "connected");
+  for (const id of ids.received) if (!groups.has(id) && rels.get(id)?.theirs?.status === "pending") groups.set(id, "interested");
+  for (const id of saved) if (!groups.has(id)) groups.set(id, "shortlist");
+  const list = [...groups.keys()].filter((id) => !hidden.has(id)).slice(0, 36);
+  const [bios, votes] = await Promise.all([getBiodatas(list), kv().mget(list.map((id) => `famvote:${owner}:${id}`))]);
+  const out: FamilyItem[] = [];
+  list.forEach((id, i) => {
+    const b = bios[i];
+    const group = groups.get(id)!;
+    if (!b) return;
+    if (group !== "connected" && (!b.published || b.familyShare === false)) return;
+    const r = rels.get(id);
+    out.push({ bio: forList(b, photosVisible(b, r?.theirs, r?.mine)), group, votes: parse<FamilyVote[]>(votes[i]) ?? [] });
+  });
+  return out;
+}
+
+export async function familyVotesFor(owner: string, profile: string) {
+  return parse<FamilyVote[]>(await kv().get(`famvote:${owner}:${profile}`)) ?? [];
+}
+
+export async function addFamilyVote(owner: string, profile: string, vote: Omit<FamilyVote, "ts">) {
+  if (!FAMILY_REACTIONS.some((r) => r.id === vote.reaction)) return null;
+  const key = `famvote:${owner}:${profile}`;
+  const cur = parse<FamilyVote[]>(await kv().get(key)) ?? [];
+  const name = vote.name.trim().slice(0, 30);
+  const next: FamilyVote = { name, reaction: vote.reaction, comment: vote.comment?.trim().slice(0, 200) || undefined, ts: Date.now() };
+  const list = [...cur.filter((v) => v.name.toLowerCase() !== name.toLowerCase()), next].slice(-20);
+  await kv().set(key, JSON.stringify(list));
+  await bumpStat("family_votes");
+  if (await kv().set(`fvn:${owner}:${profile}:${name.toLowerCase()}`, "1", { nx: true, ex: 3600 })) {
+    const r = FAMILY_REACTIONS.find((x) => x.id === vote.reaction)!;
+    await notify(owner, { type: "family", who: profile, text: `${r.emoji} ${name} ${r.verb} ${await firstName(profile)}'s profile${next.comment ? `: "${next.comment}"` : "."}`, link: "/family" });
+  }
+  return list;
+}
+
+// ---------- chat extras ----------
+
+export async function setTyping(me: string, other: string) {
+  await kv().set(`typing:${chatId(me, other)}:${me}`, "1", { ex: 6 });
+}
+
+export async function isTyping(who: string, withWhom: string) {
+  return Boolean(await kv().get(`typing:${chatId(who, withWhom)}:${who}`));
+}
+
+export async function sendMeet(me: string, other: string, meet: { when: string; mode: MeetMode; place?: string }) {
+  if (!MEET_MODES.includes(meet.mode)) throw new Error("bad mode");
+  const cid = chatId(me, other);
+  const ts = Date.now();
+  const msg: Message = { id: `${ts}-${randomBytes(4).toString("hex")}`, from: me, text: `Proposed a ${meet.mode.toLowerCase()}`, ts, kind: "meet", meet };
+  await kv().zadd(`chat:${cid}`, ts, JSON.stringify(msg));
+  await Promise.all([kv().zadd(`chats:${me}`, ts, other), kv().zadd(`chats:${other}`, ts, me), kv().set(`read:${cid}:${me}`, String(ts))]);
+  await setMeetStatus(cid, msg.id, "proposed");
+  await bumpStat("meetings");
+  await notify(other, { type: "meet", who: me, text: `${await firstName(me)} proposed a ${meet.mode.toLowerCase()}.`, link: `/chat/${me}` });
+  return msg;
+}
+
+async function setMeetStatus(cid: string, mid: string, status: MeetStatus) {
+  const cur = parse<Record<string, MeetStatus>>(await kv().get(`meets:${cid}`)) ?? {};
+  cur[mid] = status;
+  await kv().set(`meets:${cid}`, JSON.stringify(cur));
+}
+
+export async function meetStatuses(me: string, other: string) {
+  return parse<Record<string, MeetStatus>>(await kv().get(`meets:${chatId(me, other)}`)) ?? {};
+}
+
+/** The invited person accepts or declines a proposed meeting. */
+export async function respondMeet(me: string, other: string, mid: string, accept: boolean) {
+  const cid = chatId(me, other);
+  const statuses = await meetStatuses(me, other);
+  if (statuses[mid] !== "proposed") return null;
+  const recent = await kv().zlast(`chat:${cid}`, 400);
+  const msg = recent.map((r) => JSON.parse(r) as Message).find((m) => m.id === mid);
+  if (!msg || msg.kind !== "meet" || msg.from === me || !msg.meet) return null;
+  await setMeetStatus(cid, mid, accept ? "accepted" : "declined");
+  const what = msg.meet.mode.toLowerCase();
+  const reply = accept ? `Accepted the ${what}. See you then! 🙏` : `Can't make the ${what} at that time. Could we find another time?`;
+  return await sendMessage(me, other, reply);
 }

@@ -8,17 +8,20 @@ import "@fontsource/inter/700.css";
 import "@fontsource/rozha-one/400.css";
 import "./globals.css";
 import { AppNav } from "@/components/AppNav";
+import { Celebrate, InterestSheet } from "@/components/Interest";
 import { Toaster } from "@/components/Toaster";
 import { Lotus } from "@/components/Icon";
 import { currentUser } from "@/lib/auth";
 import { isDatabaseConfigured } from "@/lib/kv";
-import { getAnnouncement } from "@/lib/data";
+import { getAnnouncement, getBiodata } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: { default: "Sangam Setu", template: "%s · Sangam Setu" },
+  title: { default: "Sangam Setu · Matrimony for families", template: "%s · Sangam Setu" },
   description:
-    "Create your marriage biodata, browse profiles from your community, chat once both sides accept, and download a beautifully designed PDF.",
-  icons: { icon: "/favicon.svg" },
+    "Free matrimony for Indian families: a beautiful biodata, matches that explain themselves, free Guna Milan, a family review panel, and chat once both sides say yes.",
+  icons: { icon: "/favicon.svg", apple: "/icons/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Sangam Setu", statusBarStyle: "black-translucent" },
+  applicationName: "Sangam Setu",
 };
 
 export const viewport: Viewport = {
@@ -33,6 +36,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const dbReady = isDatabaseConfigured();
   const user = dbReady ? await currentUser().catch(() => null) : null;
   const announcement = dbReady ? await getAnnouncement().catch(() => "") : "";
+  const myBio = user ? await getBiodata(user.id).catch(() => null) : null;
+  const me = user ? { id: user.id, name: myBio?.fullName ?? user.name, photo: myBio?.photos[0] ?? null } : undefined;
 
   return (
     <html lang="en">
@@ -43,12 +48,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Lotus />
               <b>Sangam Setu</b>
             </Link>
-            <AppNav loggedIn={Boolean(user)} />
+            <AppNav loggedIn={Boolean(user)} me={me} />
           </div>
         </header>
         {announcement ? <div className="announce" role="status">{announcement}</div> : null}
         {dbReady ? children : <SetupNotice />}
         <Toaster />
+        {me ? (
+          <>
+            <InterestSheet />
+            <Celebrate me={{ name: me.name, photo: me.photo }} />
+          </>
+        ) : null}
       </body>
     </html>
   );

@@ -29,6 +29,8 @@ export interface KV {
   /** The last `count` members by score, lowest first. */
   zlast(key: string, count: number): Promise<string[]>;
   zcard(key: string): Promise<number>;
+  /** Keeps only the `keep` highest-scored members. */
+  ztrim(key: string, keep: number): Promise<void>;
 }
 
 function redisEnv() {
@@ -107,6 +109,9 @@ class UpstashKV implements KV {
   }
   async zcard(key: string) {
     return await this.r.zcard(key);
+  }
+  async ztrim(key: string, keep: number) {
+    await this.r.zremrangebyrank(key, 0, -(keep + 1));
   }
 }
 
@@ -223,6 +228,11 @@ class MemoryKV implements KV {
   async zcard(key: string) {
     return Object.keys(this.d.zset[key] ?? {}).length;
   }
+  async ztrim(key: string, keep: number) {
+    const drop = this.sorted(key).slice(0, Math.max(0, this.sorted(key).length - keep));
+    for (const [m] of drop) delete this.d.zset[key][m];
+    this.save();
+  }
 }
 
 /**
@@ -250,6 +260,7 @@ function prefixed(inner: KV): KV {
     zafter: (key, after, limit) => inner.zafter(k(key), after, limit),
     zlast: (key, n) => inner.zlast(k(key), n),
     zcard: (key) => inner.zcard(k(key)),
+    ztrim: (key, keep) => inner.ztrim(k(key), keep),
   };
 }
 

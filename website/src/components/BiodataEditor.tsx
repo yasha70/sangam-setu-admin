@@ -4,13 +4,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "./Icon";
+import { Ring } from "./Insights";
 import { PhotoManager } from "./PhotoManager";
 import { toast } from "./Toaster";
-import { completeness, publishProblems } from "@/lib/bio";
-import { SECTIONS, type FieldDef } from "@/lib/options";
-import type { Biodata, BiodataTextField } from "@/lib/types";
+import { publishProblems, strengthScore, strengthSteps } from "@/lib/bio";
+import { DIET, HEIGHTS, MARITAL_STATUS, MOTHER_TONGUES, RELIGIONS, SECTIONS, STATES, type FieldDef } from "@/lib/options";
+import { MAX_PROMPTS, PROMPTS, PROMPT_ANSWER_MAX } from "@/lib/prompts";
+import type { Biodata, BiodataTextField, PartnerPrefs, PromptAnswer } from "@/lib/types";
 
 type Values = Partial<Record<BiodataTextField, string>>;
+
+const HEIGHT_OPTS = HEIGHTS.map((label, i) => ({ inches: 54 + i, label: label.replace(/\s*\(.*\)$/, "") }));
 
 export function BiodataEditor({ initial, welcome }: { initial: Biodata; welcome: boolean }) {
   const router = useRouter();
@@ -22,12 +26,25 @@ export function BiodataEditor({ initial, welcome }: { initial: Biodata; welcome:
   });
   const [photos, setPhotos] = useState(initial.photos);
   const [published, setPublished] = useState(initial.published);
+  const [prompts, setPrompts] = useState<PromptAnswer[]>(initial.prompts ?? []);
+  const [prefs, setPrefs] = useState<PartnerPrefs>(initial.prefs ?? {});
+  const [photoPrivacy, setPhotoPrivacy] = useState(initial.photoPrivacy ?? "all");
+  const [familyShare, setFamilyShare] = useState(initial.familyShare !== false);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const draft: Biodata = useMemo(() => ({ ...initial, ...values, photos, published }), [initial, values, photos, published]);
-  const pct = completeness(draft);
+  const draft: Biodata = useMemo(
+    () => ({ ...initial, ...values, photos, published, prompts: prompts.filter((p) => p.a.trim()), prefs }),
+    [initial, values, photos, published, prompts, prefs],
+  );
+  const pct = strengthScore(draft);
+  const steps = strengthSteps(draft);
   const missing = publishProblems(draft);
+  const touch = () => setDirty(true);
+  const setPref = <K extends keyof PartnerPrefs>(k: K, v: PartnerPrefs[K]) => {
+    setPrefs((cur) => ({ ...cur, [k]: v }));
+    touch();
+  };
 
   useEffect(() => {
     const warn = (e: BeforeUnloadEvent) => {
@@ -48,7 +65,7 @@ export function BiodataEditor({ initial, welcome }: { initial: Biodata; welcome:
       const res = await fetch("/api/biodata", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fields: values, published: publish }),
+        body: JSON.stringify({ fields: values, published: publish, prompts: prompts.filter((p) => p.a.trim()), prefs, photoPrivacy, familyShare }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 422) {
@@ -72,14 +89,20 @@ export function BiodataEditor({ initial, welcome }: { initial: Biodata; welcome:
   return (
     <div className="editor">
       <aside className="editor-nav" aria-label="Sections">
-        <div className="progress">
-          <span>{pct}% complete</span>
-          <span className="bar"><i style={{ width: `${pct}%` }} /></span>
+        <div className="progress strength-mini">
+          <Ring value={pct} size={52} tone={pct >= 75 ? "green" : "brand"} />
+          <span>
+            <b>Profile strength</b>
+            <small>{steps.filter((x) => !x.done)[0]?.label ?? "All set"}</small>
+          </span>
         </div>
         <a href="#photos">Photos</a>
         {SECTIONS.map((s) => (
           <a key={s.id} href={`#${s.id}`}>{s.title}</a>
         ))}
+        <a href="#prompts">Prompts</a>
+        <a href="#prefs">Partner preferences</a>
+        <a href="#privacy">Privacy</a>
         <a href="#pdf">On your PDF</a>
       </aside>
 
@@ -129,6 +152,154 @@ export function BiodataEditor({ initial, welcome }: { initial: Biodata; welcome:
             </div>
           </section>
         ))}
+
+        <section id="prompts" className="card">
+          <div className="card-head">
+            <h2>Prompts</h2>
+            <p>Up to {MAX_PROMPTS}. Others can like an answer and send a note about it.</p>
+          </div>
+          <div className="stack" style={{ gap: 12 }}>
+            {prompts.map((p, i) => (
+              <div key={i} className="prompt-edit">
+                <div className="row" style={{ flexWrap: "nowrap" }}>
+                  <label className="sr-only" htmlFor={`prompt-q-${i}`}>Prompt {i + 1}</label>
+                  <select
+                    id={`prompt-q-${i}`}
+                    className="input"
+                    value={p.q}
+                    onChange={(e) => {
+                      setPrompts((cur) => cur.map((x, n) => (n === i ? { ...x, q: e.target.value } : x)));
+                      touch();
+                    }}
+                  >
+                    {PROMPTS.filter((q) => q === p.q || !prompts.some((x) => x.q === q)).map((q) => (
+                      <option key={q}>{q}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label="Remove this prompt"
+                    onClick={() => {
+                      setPrompts((cur) => cur.filter((_, n) => n !== i));
+                      touch();
+                    }}
+                  >
+                    <Icon name="trash" />
+                  </button>
+                </div>
+                <label className="sr-only" htmlFor={`prompt-a-${i}`}>Your answer</label>
+                <textarea
+                  id={`prompt-a-${i}`}
+                  className="input"
+                  rows={2}
+                  maxLength={PROMPT_ANSWER_MAX}
+                  value={p.a}
+                  placeholder="Be specific. Small details start the best conversations."
+                  onChange={(e) => {
+                    setPrompts((cur) => cur.map((x, n) => (n === i ? { ...x, a: e.target.value } : x)));
+                    touch();
+                  }}
+                />
+                <small className="muted">{PROMPT_ANSWER_MAX - p.a.length} characters left</small>
+              </div>
+            ))}
+            {prompts.length < MAX_PROMPTS ? (
+              <button
+                type="button"
+                className="prompt-add"
+                onClick={() => {
+                  const q = PROMPTS.find((x) => !prompts.some((p) => p.q === x))!;
+                  setPrompts((cur) => [...cur, { q, a: "" }]);
+                  touch();
+                }}
+              >
+                <Icon name="plus" />
+                Add a prompt
+              </button>
+            ) : null}
+          </div>
+        </section>
+
+        <section id="prefs" className="card">
+          <div className="card-head">
+            <h2>Partner preferences</h2>
+            <p>Used for your match scores and daily picks. Leave anything open.</p>
+          </div>
+          <div className="grid2">
+            <div className="field">
+              <span>Age</span>
+              <div className="range-pair">
+                <input type="number" className="input" min={18} max={80} inputMode="numeric" aria-label="Youngest age" placeholder="From" value={prefs.ageMin ?? ""} onChange={(e) => setPref("ageMin", e.target.value ? Number(e.target.value) : undefined)} />
+                <span>to</span>
+                <input type="number" className="input" min={18} max={80} inputMode="numeric" aria-label="Oldest age" placeholder="To" value={prefs.ageMax ?? ""} onChange={(e) => setPref("ageMax", e.target.value ? Number(e.target.value) : undefined)} />
+              </div>
+            </div>
+            <div className="field">
+              <span>Height</span>
+              <div className="range-pair">
+                <select className="input" aria-label="Shortest height" value={prefs.heightMin ?? ""} onChange={(e) => setPref("heightMin", e.target.value ? Number(e.target.value) : undefined)}>
+                  <option value="">Any</option>
+                  {HEIGHT_OPTS.map((h) => <option key={h.inches} value={h.inches}>{h.label}</option>)}
+                </select>
+                <span>to</span>
+                <select className="input" aria-label="Tallest height" value={prefs.heightMax ?? ""} onChange={(e) => setPref("heightMax", e.target.value ? Number(e.target.value) : undefined)}>
+                  <option value="">Any</option>
+                  {HEIGHT_OPTS.map((h) => <option key={h.inches} value={h.inches}>{h.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <Multi label="Religion" options={RELIGIONS} value={prefs.religions} onChange={(v) => setPref("religions", v)} />
+            <Multi label="Marital status" options={MARITAL_STATUS} value={prefs.marital} onChange={(v) => setPref("marital", v)} />
+            <Multi label="Diet" options={DIET} value={prefs.diets} onChange={(v) => setPref("diets", v)} />
+            <div className="field">
+              <span>Manglik</span>
+              <select className="input" value={prefs.manglik ?? ""} onChange={(e) => setPref("manglik", e.target.value as PartnerPrefs["manglik"])}>
+                <option value="">Doesn&apos;t matter</option>
+                <option value="No">Non-manglik only</option>
+                <option value="Yes">Manglik only</option>
+              </select>
+            </div>
+            <Multi label="Mother tongue" options={MOTHER_TONGUES} value={prefs.motherTongues} onChange={(v) => setPref("motherTongues", v)} wide />
+            <Multi label="Lives in" options={STATES} value={prefs.states} onChange={(v) => setPref("states", v)} wide scroll />
+            <label className="field wide">
+              <span>Community or caste</span>
+              <input className="input" value={prefs.communities ?? ""} maxLength={160} placeholder="e.g. Agrawal, Maheshwari (comma separated)" onChange={(e) => setPref("communities", e.target.value)} />
+              <small>Leave empty if community doesn&apos;t matter.</small>
+            </label>
+          </div>
+        </section>
+
+        <section id="privacy" className="card">
+          <div className="card-head">
+            <h2>Privacy</h2>
+          </div>
+          <div className="stack" style={{ gap: 14 }}>
+            <fieldset className="radio-cards">
+              <legend>Who can see your photos</legend>
+              <label>
+                <input type="radio" name="photoPrivacy" checked={photoPrivacy === "all"} onChange={() => { setPhotoPrivacy("all"); touch(); }} />
+                <span>
+                  <b>All members</b>
+                  <small>Recommended. Profiles with photos get many more interests.</small>
+                </span>
+              </label>
+              <label>
+                <input type="radio" name="photoPrivacy" checked={photoPrivacy === "interest"} onChange={() => { setPhotoPrivacy("interest"); touch(); }} />
+                <span>
+                  <b>Only people I&apos;ve shown interest in</b>
+                  <small>Others see a locked placeholder until you send them an interest or accept theirs.</small>
+                </span>
+              </label>
+            </fieldset>
+            <label className="switch">
+              <input type="checkbox" checked={familyShare} onChange={(e) => { setFamilyShare(e.target.checked); touch(); }} />
+              <i />
+              Let members share my profile with their family on a review link
+            </label>
+            <small className="muted">Family links never show your contact details or address.</small>
+          </div>
+        </section>
 
         <section id="pdf" className="card">
           <div className="card-head">
@@ -188,6 +359,25 @@ export function BiodataEditor({ initial, welcome }: { initial: Biodata; welcome:
   );
 }
 
+function Multi({ label, options, value = [], onChange, wide, scroll }: { label: string; options: readonly string[]; value?: string[]; onChange: (v: string[]) => void; wide?: boolean; scroll?: boolean }) {
+  const toggle = (o: string) => onChange(value.includes(o) ? value.filter((x) => x !== o) : [...value, o]);
+  return (
+    <div className={`field${wide ? " wide" : ""}`} role="group" aria-label={label}>
+      <span>
+        {label}
+        <small className="muted"> · {value.length ? `${value.length} selected` : "Any"}</small>
+      </span>
+      <div className={`multi${scroll ? " scroll" : ""}`}>
+        {options.map((o) => (
+          <button key={o} type="button" aria-pressed={value.includes(o)} onClick={() => toggle(o)}>
+            {o}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Field({ def, value, onChange }: { def: FieldDef; value: string; onChange: (v: string) => void }) {
   const id = `f-${def.key}`;
   const common = { id, name: def.key, value, placeholder: def.placeholder };
@@ -197,6 +387,7 @@ function Field({ def, value, onChange }: { def: FieldDef; value: string; onChang
       control = (
         <select {...common} onChange={(e) => onChange(e.target.value)}>
           <option value="">Select</option>
+          {value && !def.options!.includes(value) ? <option value={value}>{value}</option> : null}
           {def.options!.map((o) => (
             <option key={o} value={o}>{o}</option>
           ))}

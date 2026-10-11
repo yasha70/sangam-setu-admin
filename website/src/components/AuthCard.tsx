@@ -55,7 +55,7 @@ export function AuthCard({ initial }: { initial: Mode }) {
       } else {
         await send("/api/auth/login", "POST", { phone: f.get("phone"), password: f.get("password") });
         const next = params.get("next");
-        router.push(next && next.startsWith("/") && !next.startsWith("//") ? next : "/browse");
+        router.push(next && next.startsWith("/") && !next.startsWith("//") ? next : "/home");
       }
       router.refresh();
     } catch (err) {

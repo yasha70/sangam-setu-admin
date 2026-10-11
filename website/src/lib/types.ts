@@ -73,6 +73,24 @@ export const BIODATA_TEXT_FIELDS = [
 
 export type BiodataTextField = (typeof BIODATA_TEXT_FIELDS)[number];
 
+/** Structured partner preferences. Empty means "any". Heights are in inches. */
+export type PartnerPrefs = {
+  ageMin?: number;
+  ageMax?: number;
+  heightMin?: number;
+  heightMax?: number;
+  religions?: string[];
+  motherTongues?: string[];
+  marital?: string[];
+  diets?: string[];
+  states?: string[];
+  /** Comma-separated communities or castes, matched loosely. */
+  communities?: string;
+  manglik?: "" | "No" | "Yes";
+};
+
+export type PromptAnswer = { q: string; a: string };
+
 export type Biodata = { [K in BiodataTextField]?: string } & {
   userId: string;
   gender: Gender;
@@ -86,6 +104,15 @@ export type Biodata = { [K in BiodataTextField]?: string } & {
   /** Set by an admin: the biodata can't be published until an admin unhides it. */
   adminHidden?: boolean;
   profileNo?: number;
+  prefs?: PartnerPrefs;
+  /** Up to three answered prompts, shown as cards that others can like. */
+  prompts?: PromptAnswer[];
+  /** "interest": photos show only to people this member sent an interest to or connected with. */
+  photoPrivacy?: "all" | "interest";
+  /** false: other members can't include this profile in a family review link. */
+  familyShare?: boolean;
+  /** Set when photos were withheld from the viewer by photoPrivacy. */
+  photosHidden?: number;
 };
 
 export type ReportReason = "Fake profile" | "Wrong information" | "Inappropriate photo" | "Abusive messages" | "Asking for money" | "Already married" | "Other";
@@ -113,6 +140,10 @@ export type Interest = {
   status: InterestStatus;
   createdAt: number;
   updatedAt: number;
+  /** A short personal note sent with the interest. Becomes the first chat message once accepted. */
+  note?: string;
+  /** What they liked, e.g. a prompt they answered. */
+  liked?: string;
 };
 
 export type Relation =
@@ -125,9 +156,39 @@ export type Relation =
   | { kind: "declined-by-me"; interest: Interest }
   | { kind: "blocked" };
 
+export const MEET_MODES = ["Video call", "Phone call", "Coffee meet", "Family visit"] as const;
+export type MeetMode = (typeof MEET_MODES)[number];
+export type MeetStatus = "proposed" | "accepted" | "declined";
+
 export type Message = {
   id: string;
   from: string;
   text: string;
   ts: number;
+  /** "meet": a proposed meeting card. "note": the note sent with the interest. */
+  kind?: "text" | "meet" | "note";
+  meet?: { when: string; mode: MeetMode; place?: string };
+  /** For notes: what the sender was replying to. */
+  quote?: string;
 };
+
+export type NoticeType = "interest" | "accepted" | "view" | "family" | "meet";
+
+export type Notice = {
+  id: string;
+  type: NoticeType;
+  /** The member it's about. */
+  who?: string;
+  text: string;
+  ts: number;
+  link: string;
+};
+
+export const FAMILY_REACTIONS = [
+  { id: "love", emoji: "❤️", label: "Love this", verb: "loved" },
+  { id: "good", emoji: "👍", label: "Looks good", verb: "liked" },
+  { id: "talk", emoji: "🤔", label: "Let's discuss", verb: "wants to discuss" },
+  { id: "no", emoji: "👎", label: "Not for us", verb: "isn't keen on" },
+] as const;
+export type FamilyReaction = (typeof FAMILY_REACTIONS)[number]["id"];
+export type FamilyVote = { name: string; reaction: FamilyReaction; comment?: string; ts: number };

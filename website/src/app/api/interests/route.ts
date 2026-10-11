@@ -12,7 +12,10 @@ export const POST = withUser(async (uid, req) => {
     if (!theirs?.published) return fail("This profile isn't available.", 404);
     if (theirs.sample) return fail("This is a sample profile, so it can't receive interests.", 422);
     if (!mine?.published) return fail("Publish your own biodata first, so they can see who's interested.", 422);
-    const result = await sendInterest(uid, other);
+    const note = typeof body.note === "string" ? body.note : undefined;
+    const liked = typeof body.liked === "string" ? body.liked : undefined;
+    if (note && note.trim().length > 300) return fail("Keep your note under 300 characters.");
+    const result = await sendInterest(uid, other, { note, liked });
     if (result === "blocked") return fail("You can't send an interest to this profile.", 403);
     return ok({ ok: true, result });
   }

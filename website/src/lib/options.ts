@@ -1,3 +1,4 @@
+import { NAKSHATRAS } from "./astro";
 import type { BiodataTextField } from "./types";
 
 export const CREATED_FOR = ["Myself", "Son", "Daughter", "Brother", "Sister", "Relative", "Friend"] as const;
@@ -112,7 +113,7 @@ export const SECTIONS: SectionDef[] = [
       { key: "birthPlace", label: "Place of birth", placeholder: "e.g. Indore" },
       { key: "manglik", label: "Manglik", type: "select", options: MANGLIK },
       { key: "rashi", label: "Rashi", type: "select", options: RASHI },
-      { key: "nakshatra", label: "Nakshatra", placeholder: "e.g. Rohini" },
+      { key: "nakshatra", label: "Nakshatra", type: "select", options: NAKSHATRAS, hint: "Unlocks free Guna Milan with every profile." },
     ],
   },
   {

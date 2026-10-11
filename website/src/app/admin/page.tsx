@@ -30,6 +30,8 @@ export default async function AdminDashboard() {
     ["Interests sent", totals.interests, "all time"],
     ["Connections", totals.connections, "accepted interests"],
     ["Messages", totals.messages, "all time"],
+    ["Meetings planned", totals.meetings, "calls and visits proposed in chat"],
+    ["Family reactions", totals.family_votes, "from Parivar panel links"],
     ["Open reports", reports.length, reports.length ? "need a decision" : "nothing waiting"],
     ["Suspended", count((m) => m.user.status === "suspended"), "can't log in"],
     ["Sample profiles", samples, samples ? "shown in browse" : "switched off"],

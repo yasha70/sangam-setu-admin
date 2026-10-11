@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Icon } from "./Icon";
-import { MARITAL_STATUS, RELIGIONS, STATES } from "@/lib/options";
+import { DIET, MARITAL_STATUS, MOTHER_TONGUES, RELIGIONS, STATES } from "@/lib/options";
 
 export type Filters = {
   q?: string;
@@ -15,6 +15,11 @@ export type Filters = {
   marital?: string;
   photo?: string;
   verified?: string;
+  diet?: string;
+  tongue?: string;
+  mutual?: string;
+  guna?: string;
+  sort?: string;
 };
 
 export function BrowseFilters({ f, count }: { f: Filters; count: number }) {
@@ -74,6 +79,33 @@ export function BrowseFilters({ f, count }: { f: Filters; count: number }) {
                 <option key={s}>{s}</option>
               ))}
             </select>
+          </label>
+          <label className="field">
+            <span>Mother tongue</span>
+            <select name="tongue" defaultValue={f.tongue ?? ""}>
+              <option value="">Any</option>
+              {MOTHER_TONGUES.map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            <span>Diet</span>
+            <select name="diet" defaultValue={f.diet ?? ""}>
+              <option value="">Any</option>
+              {DIET.map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+          </label>
+          {f.sort ? <input type="hidden" name="sort" value={f.sort} /> : null}
+          <label className="check">
+            <input type="checkbox" name="mutual" value="1" defaultChecked={f.mutual === "1"} />
+            <span>Mutual matches only</span>
+          </label>
+          <label className="check">
+            <input type="checkbox" name="guna" value="1" defaultChecked={f.guna === "1"} />
+            <span>Guna Milan 18 or more</span>
           </label>
           <label className="check">
             <input type="checkbox" name="photo" value="1" defaultChecked={f.photo === "1"} />

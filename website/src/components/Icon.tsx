@@ -33,6 +33,23 @@ const PATHS: Record<string, ReactNode> = {
   mic: (<><rect x="9" y="2" width="6" height="12" rx="3" /><path d="M5 11a7 7 0 0 0 14 0" /><line x1="12" y1="18" x2="12" y2="22" /></>),
   clock: (<><circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 15 14" /></>),
   star: <path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z" />,
+  bell: (<><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" /></>),
+  compass: (<><circle cx="12" cy="12" r="9.5" /><polygon points="15.5 8.5 13.5 13.5 8.5 15.5 10.5 10.5" /></>),
+  sparkle: <path d="M12 3c.6 4.2 2.8 6.4 7 7-4.2.6-6.4 2.8-7 7-.6-4.2-2.8-6.4-7-7 4.2-.6 6.4-2.8 7-7zM19 15c.3 1.7 1.2 2.6 2.9 2.9-1.7.3-2.6 1.2-2.9 2.9-.3-1.7-1.2-2.6-2.9-2.9 1.7-.3 2.6-1.2 2.9-2.9z" />,
+  undo: (<><polyline points="9 14 4 9 9 4" /><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" /></>),
+  calendar: (<><rect x="3" y="5" width="18" height="16" rx="2" /><line x1="16" y1="3" x2="16" y2="7" /><line x1="8" y1="3" x2="8" y2="7" /><line x1="3" y1="10" x2="21" y2="10" /></>),
+  video: (<><rect x="2" y="6" width="14" height="12" rx="2" /><path d="M16 10.5 22 7v10l-6-3.5" /></>),
+  coffee: (<><path d="M17 8h1a4 4 0 0 1 0 8h-1" /><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z" /><line x1="7" y1="2" x2="7" y2="5" /><line x1="11" y1="2" x2="11" y2="5" /></>),
+  share: (<><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><line x1="8.6" y1="13.5" x2="15.4" y2="17.5" /><line x1="15.4" y1="6.5" x2="8.6" y2="10.5" /></>),
+  copy: (<><rect x="9" y="9" width="12" height="12" rx="2" /><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" /></>),
+  moon: <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />,
+  chevron: <polyline points="9 6 15 12 9 18" />,
+  trash: (<><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></>),
+  family: (<><circle cx="7" cy="6.5" r="2.5" /><circle cx="17" cy="6.5" r="2.5" /><circle cx="12" cy="12.5" r="2" /><path d="M3 21v-4a4 4 0 0 1 4-4h0" /><path d="M21 21v-4a4 4 0 0 0-4-4h0" /><path d="M8.5 21v-2.5a3.5 3.5 0 0 1 7 0V21" /></>),
+  quote: (<><path d="M4 18c3-1 4.5-3.5 4.5-7.5V6H3.5v6H7" /><path d="M14 18c3-1 4.5-3.5 4.5-7.5V6h-5v6H17" /></>),
+  link: (<><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6" /><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2" /></>),
+  grid: (<><rect x="3" y="3" width="7.5" height="7.5" rx="1.5" /><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" /><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" /><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" /></>),
+  install: (<><rect x="6" y="2" width="12" height="20" rx="2.5" /><path d="M12 7v7" /><polyline points="9 11 12 14 15 11" /><line x1="10" y1="18.5" x2="14" y2="18.5" /></>),
 };
 
 export function Icon({ name, className = "ico", title }: { name: keyof typeof PATHS | string; className?: string; title?: string }) {

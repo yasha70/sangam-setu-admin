@@ -1,11 +1,16 @@
-import { cleanBiodataInput, getBiodata, publishProblems, saveBiodata } from "@/lib/data";
+import { cleanBiodataInput, cleanPrefs, cleanPrompts, getBiodata, publishProblems, saveBiodata } from "@/lib/data";
+import type { Biodata } from "@/lib/types";
 import { fail, ok, readJson, withUser } from "@/lib/api";
 
 export const PUT = withUser(async (uid, req) => {
   const body = await readJson(req);
   const current = await getBiodata(uid);
   if (!current) return fail("Biodata not found.", 404);
-  const fields = cleanBiodataInput((body.fields as Record<string, unknown>) ?? {});
+  const fields: Partial<Biodata> = cleanBiodataInput((body.fields as Record<string, unknown>) ?? {});
+  if ("prefs" in body) fields.prefs = cleanPrefs(body.prefs);
+  if ("prompts" in body) fields.prompts = cleanPrompts(body.prompts);
+  if (body.photoPrivacy === "all" || body.photoPrivacy === "interest") fields.photoPrivacy = body.photoPrivacy;
+  if (typeof body.familyShare === "boolean") fields.familyShare = body.familyShare;
   const wantPublished = typeof body.published === "boolean" ? body.published : current.published;
   if (wantPublished && current.adminHidden) {
     await saveBiodata(uid, { ...fields, published: false });
