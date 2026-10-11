@@ -4,7 +4,7 @@ import { StatusPills } from "@/components/admin/StatusPills";
 import { BiodataView } from "@/components/BiodataView";
 import { requireAdmin } from "@/lib/admin";
 import { fmtDate } from "@/lib/adminData";
-import { activityLabel, getBiodata, getUser, listInterestIds, profileCode, reportsAgainst, viewsFor } from "@/lib/data";
+import { activityLabel, getBiodata, getUser, hiddenAttempts, listInterestIds, profileCode, reportsAgainst, viewsFor } from "@/lib/data";
 
 export const metadata = { title: "Member" };
 
@@ -20,7 +20,7 @@ export default async function AdminMember({ params }: { params: Promise<{ id: st
       </div>
     );
   }
-  const [ids, views, reports] = await Promise.all([listInterestIds(id), viewsFor(id), reportsAgainst(id)]);
+  const [ids, views, reports, attempts] = await Promise.all([listInterestIds(id), viewsFor(id), reportsAgainst(id), hiddenAttempts(id)]);
 
   return (
     <div className="stack">
@@ -34,6 +34,11 @@ export default async function AdminMember({ params }: { params: Promise<{ id: st
         <div className="tile"><span>Interests</span><b>{ids.sent.length}</b><small>sent · {ids.received.length} received</small></div>
         <div className="tile"><span>Connections</span><b>{ids.connected.length}</b><small>accepted</small></div>
         <div className="tile"><span>Profile views</span><b>{views.count}</b><small>all time</small></div>
+        <div className="tile" style={attempts >= 3 ? { borderColor: "#f5d27a", background: "#fff8e6" } : undefined}>
+          <span>Contact details hidden</span>
+          <b>{attempts}</b>
+          <small>{attempts >= 3 ? "keeps trying to share a number" : "times a number or email was hidden"}</small>
+        </div>
       </div>
       <div className="row"><StatusPills user={user} bio={bio} /></div>
 

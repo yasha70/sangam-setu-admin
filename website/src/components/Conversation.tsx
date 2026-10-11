@@ -6,6 +6,7 @@ import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, use
 import { startCall } from "./CallManager";
 import { Icon, Silhouette } from "./Icon";
 import { send, toast } from "./Toaster";
+import { hasContact, maskContacts } from "@/lib/privacy";
 import { MEET_MODES, REACTIONS, type CallOutcome, type ChatMeta, type MeetMode, type MeetStatus, type Message } from "@/lib/types";
 
 type Msg = Message & { pending?: boolean; localUrl?: string };
@@ -337,7 +338,7 @@ export function Conversation({
     const t = (preset ?? text).trim();
     if (!t) return;
     const reply = replyTo ? { id: replyTo.id, from: replyTo.from, text: replyTo.text || (replyTo.kind === "image" ? "📷 Photo" : replyTo.kind === "voice" ? "🎤 Voice note" : "") } : undefined;
-    const temp: Msg = { id: `tmp-${Date.now()}`, from: me, text: t, ts: Date.now(), pending: true, reply };
+    const temp: Msg = { id: `tmp-${Date.now()}`, from: me, text: maskContacts(t).text, ts: Date.now(), pending: true, reply };
     stick.current = true;
     setMessages((cur) => [...cur, temp]);
     if (!preset) setText("");
@@ -699,6 +700,13 @@ export function Conversation({
           </span>
           <button className="icon-btn" aria-label="Cancel reply" onClick={() => setReplyTo(null)}><Icon name="x" /></button>
         </div>
+      ) : null}
+
+      {!rec && hasContact(text) ? (
+        <p className="contact-hint" role="status">
+          <span aria-hidden="true">📵</span>
+          Phone numbers, emails and WhatsApp links are hidden automatically. Use the 📞 call button to talk; numbers are in each other&apos;s biodata once connected.
+        </p>
       ) : null}
 
       {rec ? (

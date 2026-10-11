@@ -4,7 +4,19 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { send, toast } from "../Toaster";
 
-export function SettingsForms({ announcement, samplesOn, sampleTotal }: { announcement: string; samplesOn: boolean; sampleTotal: number }) {
+export function SettingsForms({
+  announcement,
+  samplesOn,
+  sampleTotal,
+  hidingOn,
+  hiddenTotal,
+}: {
+  announcement: string;
+  samplesOn: boolean;
+  sampleTotal: number;
+  hidingOn: boolean;
+  hiddenTotal: number;
+}) {
   const router = useRouter();
   const [text, setText] = useState(announcement);
   const [busy, setBusy] = useState(false);
@@ -39,6 +51,18 @@ export function SettingsForms({ announcement, samplesOn, sampleTotal }: { announ
             ) : null}
           </div>
         </div>
+      </section>
+
+      <section className="card">
+        <div className="card-head"><h2>Hide phone numbers and emails</h2><p>{hidingOn ? "On" : "Off"} · {hiddenTotal} hidden so far</p></div>
+        <p className="muted small" style={{ marginBottom: 12 }}>
+          Replaces phone numbers (including spaced-out or spelt-out ones), email addresses and WhatsApp or Telegram links with
+          &quot;📵 number hidden&quot; in chat messages, interest notes, biodata text, prompts and family comments. The Contact person
+          section isn&apos;t affected; it&apos;s shared automatically once both sides accept.
+        </p>
+        <button className={`btn btn-sm ${hidingOn ? "btn-ghost" : "btn-brand"}`} disabled={busy} onClick={() => save({ hideContacts: !hidingOn })}>
+          {hidingOn ? "Stop hiding contact details" : "Hide contact details again"}
+        </button>
       </section>
 
       <section className="card">

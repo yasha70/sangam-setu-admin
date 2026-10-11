@@ -68,16 +68,25 @@ export function BiodataEditor({ initial, welcome }: { initial: Biodata; welcome:
         body: JSON.stringify({ fields: values, published: publish, prompts: prompts.filter((p) => p.a.trim()), prefs, photoPrivacy, familyShare }),
       });
       const data = await res.json().catch(() => ({}));
+      // The server hides phone numbers and emails in free text; show the member what was saved.
+      if (data.fields) {
+        const { prompts: savedPrompts, ...savedFields } = data.fields as Values & { prompts?: PromptAnswer[] };
+        setValues((cur) => ({ ...cur, ...savedFields }));
+        if (savedPrompts) setPrompts(savedPrompts);
+      }
+      const hiddenNote = data.hidden
+        ? ` We hid ${data.hidden === 1 ? "a phone number or email" : `${data.hidden} phone numbers or emails`} from your text. Add contact details under Contact person; they're shared once you both accept.`
+        : "";
       if (res.status === 422) {
         setPublished(false);
         setDirty(false);
-        toast(data.error, true);
+        toast(data.error + hiddenNote, true);
         return;
       }
       if (!res.ok) throw new Error(data.error || "Couldn't save. Please try again.");
       setPublished(Boolean(data.published));
       setDirty(false);
-      toast(data.published ? "Saved. Your biodata is live." : "Saved.");
+      toast((data.published ? "Saved. Your biodata is live." : "Saved.") + hiddenNote, Boolean(data.hidden));
       router.refresh();
     } catch (e) {
       toast((e as Error).message, true);
@@ -141,7 +150,7 @@ export function BiodataEditor({ initial, welcome }: { initial: Biodata; welcome:
             </div>
             {s.note ? (
               <p className="section-note">
-                <Icon name={s.id === "horoscope" ? "info" : "lock"} />
+                <Icon name={s.id === "horoscope" || s.id === "about" ? "info" : "lock"} />
                 {s.note}
               </p>
             ) : null}
@@ -156,7 +165,7 @@ export function BiodataEditor({ initial, welcome }: { initial: Biodata; welcome:
         <section id="prompts" className="card">
           <div className="card-head">
             <h2>Prompts</h2>
-            <p>Up to {MAX_PROMPTS}. Others can like an answer and send a note about it.</p>
+            <p>Up to {MAX_PROMPTS}. Others can like an answer and send a note about it. Phone numbers are hidden automatically.</p>
           </div>
           <div className="stack" style={{ gap: 12 }}>
             {prompts.map((p, i) => (

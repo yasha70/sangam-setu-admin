@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Icon, Lotus, Silhouette } from "./Icon";
 import { send, toast } from "./Toaster";
+import { hasContact } from "@/lib/privacy";
 
 export type InterestTarget = { id: string; name: string; photo?: string | null; liked?: string };
 type Person = { id: string; name: string; photo?: string | null };
@@ -109,6 +110,7 @@ export function InterestSheet() {
             <span>Your note (optional)</span>
             <textarea value={note} maxLength={300} onChange={(e) => setNote(e.target.value)} placeholder={`Write something kind to ${first}…`} autoFocus />
             <small>{300 - note.length} characters left. It becomes your first message once they accept.</small>
+            {hasContact(note) ? <small className="contact-warn">📵 Phone numbers and emails are hidden automatically. Contact details are shared once they accept.</small> : null}
           </label>
           <div className="chips">
             {ideas.map((i) => (

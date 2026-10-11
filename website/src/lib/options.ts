@@ -174,6 +174,7 @@ export const SECTIONS: SectionDef[] = [
   {
     id: "about",
     title: "About and expectations",
+    note: "Phone numbers and emails written here are hidden automatically. Add them under Contact person instead.",
     fields: [
       { key: "about", label: "About me", type: "textarea", wide: true, max: 600, placeholder: "A few lines about who you are, your work and your values." },
       { key: "hobbies", label: "Hobbies and interests", wide: true, placeholder: "e.g. Cricket, cooking, travel" },

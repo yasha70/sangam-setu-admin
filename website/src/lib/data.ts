@@ -1,6 +1,7 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import { kv } from "./kv";
+import { maskContacts } from "./privacy";
 import { MAX_PROMPTS, PROMPTS, PROMPT_ANSWER_MAX } from "./prompts";
 import {
   BIODATA_TEXT_FIELDS,
@@ -51,6 +52,8 @@ import {
    cmeta:{cid}          ChatMeta JSON: reactions per message, ids deleted for everyone
    calls:{cid}          JSON map of call id -> outcome (see lib/calls.ts for the call keys)
    pnote:{id}:{other}   a member's private note about a profile
+   settings:hidecontacts  "off" to stop hiding phone numbers and emails in what members write
+   hidcount:{id}        how many times this member tried to share contact details
 */
 
 export { ageFrom, completeness, publishProblems } from "./bio";
@@ -78,6 +81,71 @@ export const day = (ts = Date.now()) => new Date(ts + 5.5 * 3600_000).toISOStrin
 
 export async function bumpStat(name: string) {
   await Promise.all([kv().incr(`stats:${name}`), kv().incr(`stats:${name}:${day()}`, 60 * 60 * 24 * 60)]);
+}
+
+// ---------- hiding contact details ----------
+
+let hidingCache = { on: true, at: 0 };
+
+/** Whether phone numbers and emails are hidden in what members write (on unless the admin turns it off). Cached for 30 seconds. */
+export async function contactsHidingOn(fresh = false) {
+  if (fresh || Date.now() - hidingCache.at > 30_000) hidingCache = { on: (await kv().get("settings:hidecontacts")) !== "off", at: Date.now() };
+  return hidingCache.on;
+}
+
+export async function setContactsHiding(on: boolean) {
+  if (on) await kv().del("settings:hidecontacts");
+  else await kv().set("settings:hidecontacts", "off");
+  hidingCache = { on, at: Date.now() };
+}
+
+/** Hides contact details in text a member wrote, and counts the attempt. */
+export async function scrub(uid: string, text: string) {
+  if (!text || !(await contactsHidingOn())) return { text, hidden: 0 };
+  const m = maskContacts(text);
+  if (m.hidden) await Promise.all([bumpStat("contacts_hidden"), kv().incr(`hidcount:${uid}`)]);
+  return m;
+}
+
+export async function hiddenAttempts(uid: string) {
+  return Number((await kv().get(`hidcount:${uid}`)) ?? 0);
+}
+
+/** Biodata fields other people read as free text. Contact fields are shared only after acceptance, so they stay as they are. */
+const SCRUBBED_FIELDS: BiodataTextField[] = BIODATA_TEXT_FIELDS.filter(
+  (f) => !(PRIVATE_FIELDS as string[]).includes(f) && !(OWNER_ONLY_FIELDS as string[]).includes(f) && !["dob", "birthTime", "height"].includes(f),
+);
+
+function maskBioText(b: Biodata): Biodata {
+  if (!hidingCache.on) return b;
+  const copy: Biodata = { ...b };
+  for (const f of SCRUBBED_FIELDS) if (copy[f]) copy[f] = maskContacts(copy[f]!).text;
+  if (copy.prompts) copy.prompts = copy.prompts.map((p) => ({ ...p, a: maskContacts(p.a).text }));
+  return copy;
+}
+
+/** Hides contact details in a member's own biodata edits. Returns the cleaned fields and how many were hidden. */
+export async function scrubBiodata(uid: string, fields: Partial<Biodata>) {
+  if (!(await contactsHidingOn())) return { fields, hidden: 0 };
+  let hidden = 0;
+  const out: Partial<Biodata> = { ...fields };
+  for (const f of SCRUBBED_FIELDS) {
+    const v = out[f];
+    if (typeof v === "string" && v) {
+      const m = maskContacts(v);
+      hidden += m.hidden;
+      out[f] = m.text;
+    }
+  }
+  if (out.prompts) {
+    out.prompts = out.prompts.map((p) => {
+      const m = maskContacts(p.a);
+      hidden += m.hidden;
+      return { ...p, a: m.text };
+    });
+  }
+  if (hidden) await Promise.all([bumpStat("contacts_hidden"), kv().incr(`hidcount:${uid}`)]);
+  return { fields: out, hidden };
 }
 
 export async function createUser(input: { name: string; phone: string; gender: Gender; createdFor: string; passHash: string }) {
@@ -167,7 +235,8 @@ export function biodataForViewer(b: Biodata, relation: Relation): Biodata {
   for (const f of OWNER_ONLY_FIELDS) delete copy[f];
   if (relation.kind !== "connected") for (const f of PRIVATE_FIELDS) delete copy[f];
   const showPhotos = b.photoPrivacy !== "interest" || ["connected", "received", "declined-by-me"].includes(relation.kind);
-  return showPhotos ? copy : withoutPhotos(copy);
+  const masked = maskBioText(copy);
+  return showPhotos ? masked : withoutPhotos(masked);
 }
 
 /** Can the viewer see b's photos? `theirs` is b's interest in the viewer, `mine` the viewer's interest in b. */
@@ -183,7 +252,8 @@ export function withoutPhotos(b: Biodata): Biodata {
 export function forList(b: Biodata, showPhotos: boolean): Biodata {
   const copy: Biodata = { ...b };
   for (const f of [...OWNER_ONLY_FIELDS, ...PRIVATE_FIELDS]) delete copy[f];
-  return showPhotos ? copy : withoutPhotos(copy);
+  const masked = maskBioText(copy);
+  return showPhotos ? masked : withoutPhotos(masked);
 }
 
 export function cleanPrefs(input: unknown): PartnerPrefs {
@@ -308,7 +378,7 @@ export async function sendInterest(me: string, other: string, extra: { note?: st
   if (rel.kind !== "none") return rel.kind;
   if (await isBlockedEitherWay(me, other)) return "blocked" as const;
   const now = Date.now();
-  const note = extra.note?.trim().slice(0, 300) || undefined;
+  const note = (await scrub(me, extra.note?.trim().slice(0, 300) ?? "")).text || undefined;
   const liked = note ? extra.liked?.trim().slice(0, 240) || undefined : undefined;
   const interest: Interest = { from: me, to: other, status: "pending", createdAt: now, updatedAt: now, note, liked };
   await kv().set(`int:${me}:${other}`, JSON.stringify(interest));
@@ -354,7 +424,8 @@ export async function interestsFor(me: string, others: string[]) {
   const keys = others.flatMap((o) => [`int:${me}:${o}`, `int:${o}:${me}`]);
   const rows = await kv().mget(keys);
   const map = new Map<string, { mine: Interest | null; theirs: Interest | null }>();
-  others.forEach((o, i) => map.set(o, { mine: parse<Interest>(rows[i * 2]), theirs: parse<Interest>(rows[i * 2 + 1]) }));
+  const clean = (i: Interest | null) => (i?.note && hidingCache.on ? { ...i, note: maskContacts(i.note).text, liked: i.liked && maskContacts(i.liked).text } : i);
+  others.forEach((o, i) => map.set(o, { mine: clean(parse<Interest>(rows[i * 2])), theirs: clean(parse<Interest>(rows[i * 2 + 1])) }));
   return map;
 }
 
@@ -389,6 +460,7 @@ export async function canChat(me: string, other: string) {
 export async function sendMessage(me: string, other: string, text: string, extra: Partial<Pick<Message, "kind" | "media" | "reply" | "call">> = {}) {
   const cid = chatId(me, other);
   const ts = Date.now();
+  text = (await scrub(me, text)).text;
   const msg: Message = { id: `${ts}-${randomBytes(4).toString("hex")}`, from: me, text, ts, ...extra };
   await kv().zadd(`chat:${cid}`, ts, JSON.stringify(msg));
   await Promise.all([
@@ -404,7 +476,13 @@ export async function sendMessage(me: string, other: string, text: string, extra
 export async function getMessages(me: string, other: string, after: number) {
   const cid = chatId(me, other);
   const raw = after > 0 ? await kv().zafter(`chat:${cid}`, after, 200) : await kv().zlast(`chat:${cid}`, 200);
-  return raw.map((r) => JSON.parse(r) as Message);
+  const hide = await contactsHidingOn();
+  return raw.map((r) => {
+    const m = JSON.parse(r) as Message;
+    if (hide && m.text) m.text = maskContacts(m.text).text;
+    if (hide && m.meet?.place) m.meet.place = maskContacts(m.meet.place).text;
+    return m;
+  });
 }
 
 export async function markRead(me: string, other: string, ts: number) {
@@ -424,7 +502,7 @@ export async function listChats(me: string) {
       const cid = chatId(me, o);
       const [last, read] = await Promise.all([kv().zlast(`chat:${cid}`, 1), kv().get(`read:${cid}:${me}`)]);
       const lastMsg = last[0] ? (JSON.parse(last[0]) as Message) : null;
-      if (lastMsg) lastMsg.text = previewText(lastMsg);
+      if (lastMsg) lastMsg.text = maskContacts(previewText(lastMsg)).text;
       const readTs = Number(read ?? 0);
       const newer = await kv().zafter(`chat:${cid}`, readTs, 100);
       const unread = newer.map((r) => JSON.parse(r) as Message).filter((m) => m.from !== me).length;
@@ -559,7 +637,7 @@ export async function userCount() {
 }
 
 export async function statTotals() {
-  const names = ["signups", "interests", "connections", "messages", "meetings", "family_votes", "calls"];
+  const names = ["signups", "interests", "connections", "messages", "meetings", "family_votes", "calls", "contacts_hidden"];
   const vals = await kv().mget(names.map((n) => `stats:${n}`));
   return Object.fromEntries(names.map((n, i) => [n, Number(vals[i] ?? 0)])) as Record<string, number>;
 }
@@ -732,7 +810,8 @@ export async function addFamilyVote(owner: string, profile: string, vote: Omit<F
   const key = `famvote:${owner}:${profile}`;
   const cur = parse<FamilyVote[]>(await kv().get(key)) ?? [];
   const name = vote.name.trim().slice(0, 30);
-  const next: FamilyVote = { name, reaction: vote.reaction, comment: vote.comment?.trim().slice(0, 200) || undefined, ts: Date.now() };
+  const comment = (await scrub(`family:${owner}`, vote.comment?.trim().slice(0, 200) ?? "")).text;
+  const next: FamilyVote = { name, reaction: vote.reaction, comment: comment || undefined, ts: Date.now() };
   const list = [...cur.filter((v) => v.name.toLowerCase() !== name.toLowerCase()), next].slice(-20);
   await kv().set(key, JSON.stringify(list));
   await bumpStat("family_votes");
@@ -755,6 +834,7 @@ export async function isTyping(who: string, withWhom: string) {
 
 export async function sendMeet(me: string, other: string, meet: { when: string; mode: MeetMode; place?: string }) {
   if (!MEET_MODES.includes(meet.mode)) throw new Error("bad mode");
+  if (meet.place) meet = { ...meet, place: (await scrub(me, meet.place)).text };
   const cid = chatId(me, other);
   const ts = Date.now();
   const msg: Message = { id: `${ts}-${randomBytes(4).toString("hex")}`, from: me, text: `Proposed a ${meet.mode.toLowerCase()}`, ts, kind: "meet", meet };

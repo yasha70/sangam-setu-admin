@@ -81,6 +81,7 @@ Calls connect the two browsers directly (WebRTC) and use public STUN servers to 
 - Other people see only the city and state. The full address is shown only to its owner, and printed only on the owner's own PDF if they choose.
 - Contact details are sent to a viewer only after an interest between the two is accepted.
 - Chat opens only between two accepted connections. Either side can block the other.
+- Phone numbers, email addresses and WhatsApp/Telegram links typed into chat, interest notes, biodata text, prompts and family comments are replaced with "📵 number hidden" before they're saved, and again when shown, so older messages are covered too. It catches spaced-out digits, +91/0 prefixes and numbers spelt out in English or Hindi words, while leaving dates, amounts and pin codes alone (`src/lib/privacy.ts`). The Contact person section isn't affected. Admins can switch it off in Settings and see how often each member tried.
 - With photo privacy on, photos are left out of the page entirely (not just blurred) until the member sends an interest or connects.
 - Family review links show first name and last initial, never contact details or address, and skip anyone who turned off family sharing. Links expire after 14 days and can be switched off.
 

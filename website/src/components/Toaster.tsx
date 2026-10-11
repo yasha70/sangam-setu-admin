@@ -16,7 +16,7 @@ export function Toaster() {
       const d = (e as CustomEvent<{ text: string; error?: boolean }>).detail;
       setMsg({ ...d, id: Date.now() });
       clearTimeout(timer);
-      timer = setTimeout(() => setMsg(null), 3400);
+      timer = setTimeout(() => setMsg(null), Math.min(9000, Math.max(3400, d.text.length * 55)));
     };
     window.addEventListener("sangam-toast", on);
     return () => {
