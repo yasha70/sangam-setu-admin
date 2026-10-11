@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/admin/users", label: "Members" },
   { href: "/admin/reports", label: "Reports" },
   { href: "/admin/settings", label: "Settings" },
+  { href: "/admin/testing", label: "Testing" },
 ];
 
 export function AdminNav({ openReports }: { openReports: number }) {

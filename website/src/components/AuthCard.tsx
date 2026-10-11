@@ -100,6 +100,9 @@ export function AuthCard({ initial }: { initial: Mode }) {
         {signup ? "Fill in these details and you're in. No OTP needed." : "Log in with your mobile number and password."}
       </p>
 
+      {params.get("test") === "expired" ? (
+        <p className="notice" style={{ marginTop: 14 }}>That test login link has expired or was deleted. Make a new one in Admin → Testing.</p>
+      ) : null}
       <form className="form" style={{ marginTop: 18 }} onSubmit={onSubmit}>
         {signup ? (
           <>

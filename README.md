@@ -64,6 +64,10 @@ Open `/admin` and log in with the `ADMIN_PASSWORD` environment variable. Without
 
 To change the admin password, edit `ADMIN_PASSWORD` in Vercel → Project → Settings → Environment Variables and redeploy.
 
+### Testing chat and calls yourself (temporary)
+
+Admin → **Testing** creates two connected test accounts (a test groom and a test bride) with one-tap login links. Open one link on each of two devices, or one in an incognito window, and you land straight in their chat, ready to message or call. The same page can connect any two existing accounts by mobile number or profile ID, skipping the interest step. Test accounts stay unpublished, carry a "Test account" tag in Members, and the **Delete test accounts** button removes them and their chats. The code lives in `src/lib/testing.ts`, `src/app/admin/testing`, `src/app/api/admin/testing` and `src/app/t/[token]`; delete those when the tools are no longer needed.
+
 ### Calls
 
 Calls connect the two browsers directly (WebRTC) and use public STUN servers to find a route. On some mobile networks a direct route isn't possible; for those, add a TURN relay (for example from Metered, Twilio or Cloudflare) by setting `TURN_URL` (comma-separated), `TURN_USERNAME` and `TURN_CREDENTIAL` in Vercel. Until then, a call that can't connect ends with "Couldn't connect on this network".

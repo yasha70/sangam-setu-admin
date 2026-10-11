@@ -12,6 +12,8 @@ export type User = {
   profileNo?: number;
   lastActive?: number;
   status?: "active" | "suspended";
+  /** A temporary account made from Admin → Testing. */
+  test?: boolean;
 };
 
 export type PublicUser = Pick<User, "id" | "name" | "gender" | "createdFor">;
